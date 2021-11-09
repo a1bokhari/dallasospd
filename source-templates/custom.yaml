@@ -1,0 +1,216 @@
+resource_registry:
+  # Configure Networks
+  OS::TripleO::Controller::Net::SoftwareConfig: net-config-controller.yaml
+  OS::TripleO::Compute::Net::SoftwareConfig: net-config-compute.yaml
+  OS::TripleO::ContrailSriov::Net::SoftwareConfig: net-config-compute-sriov.yaml
+  OS::TripleO::ContrailDpdk::Net::SoftwareConfig: net-config-compute-dpdk.yaml
+  OS::TripleO::ComputeNFV::Net::SoftwareConfig: net-config-compute-nfv.yaml
+  OS::TripleO::ContrailController::Net::SoftwareConfig: net-config-contrailcontroller.yaml
+
+  #OS::TripleO::Services::CephMgr: deployment/ceph-ansible/ceph-mgr.yaml
+  #OS::TripleO::Services::CephMon: deployment/ceph-ansible/ceph-mon.yaml
+  #OS::TripleO::Services::CephOSD: deployment/ceph-ansible/ceph-osd.yaml
+  #OS::TripleO::Services::CephClient: deployment/ceph-ansible/ceph-client.yaml
+
+  #OS::TripleO::Services::SwiftProxy: OS::Heat::None
+  #OS::TripleO::Services::SwiftStorage: OS::Heat::None
+  #OS::TripleO::Services::SwiftRingBuilder: OS::Heat::None
+
+parameter_defaults:
+
+  ContainerImagePrepare:
+  - push_destination: false
+    set:
+      ceph_image: default_organization-library-osp16-2-osp16_containers-rhceph-4-rhel8
+      ceph_namespace: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000
+      ceph_tag: latest
+      name_prefix: default-dev-osp16-2-osp16_containers
+      name_suffix: ''
+      namespace: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000
+      neutron_driver: ovs
+      rhel_containers: false
+      tag: '16.2'
+    tag_from_label: '{version}-{release}'
+  ContainerImageRegistryLogin: true
+  #ContainerImageRegistryCredentials:
+  #  'hub.juniper.net/contrail': {'JNPR-Customer242': 'hRGciB1J7YLr90AafKjM'}
+
+  EC2MetadataIp: 10.62.62.1
+  ControlPlaneDefaultRoute: 10.62.62.1
+  NtpServer:
+    - 172.16.0.1
+  DnsServers:
+    - 172.16.0.1
+  ControlPlaneSubnetCidr: '24'
+
+  #NeutronPublicInterface: ens4f0 # Not sure what this is
+  NeutronBridgeMappings: datacentre:br-ex,tenant:br-tenant
+  NeutronExternalNetworkBridge: br-ex
+
+  BondInterfaceOvsOptions: "mode=4 miimon=100"
+
+  CloudDomain: vimosp.local
+  CloudName: overcloud.vimosp.local
+  CloudNameInternal: overcloud.internalapi.vimosp.local
+  CloudNameStorage: overcloud.storage.vimosp.local
+  CloudNameStorageManagement: overcloud.storagemgmt.vimosp.local
+  CloudNameCtlplane: overcloud.ctlplane.vimosp.local
+
+  NovaSchedulerDefaultFilters:
+    - RetryFilter
+    - AvailabilityZoneFilter
+    - ComputeFilter
+    - AggregateInstanceExtraSpecsFilter
+    - ComputeCapabilitiesFilter
+    - ImagePropertiesFilter
+    - ServerGroupAntiAffinityFilter
+    - ServerGroupAffinityFilter
+    - PciPassthroughFilter
+    - NUMATopologyFilter
+
+  # Compute settings
+  ComputeParameters:
+    KernelArgs: "default_hugepagesz=1GB hugepagesz=1G hugepages=256"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=2
+      vm.nr_hugepages:
+        value: 256
+      vm.max_map_count:
+        value: 128960
+
+   # Compute SR-IOV parameters
+  ContrailSriovParameters:
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=256 hugepagesz=2M hugepages=16384 tsx=off"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=256
+      vm.nr_hugepages:
+        value: 256
+      vm.max_map_count:
+        value: 128960
+    # vfio_iommu_type1 driver needed for sriov
+    ExtraKernelModules:
+      vfio: {}
+    ContrailSriovMode: 'kernel'
+    NeutronPhysicalDevMappings:
+      - sriov1:ens3f0
+      - sriov2:ens3f1
+      - sriov3:ens5f0
+      - sriov4:ens5f1
+    ContrailSriovNumVFs:
+      - ens3f0:4
+      - ens3f1:4
+      - ens5f0:4
+      - ens5f1:4
+    NovaPCIPassthrough:
+      - devname: "ens3f0"
+        physical_network: "sriov1"
+      - devname: "ens3f1"
+        physical_network: "sriov2"
+      - devname: "ens5f0"
+        physical_network: "sriov3"
+      - devname: "ens5f1"
+        physical_network: "sriov4"
+    TunedProfileName: "cpu-partitioning"
+    IsolCpusList: 4-51,56-103
+    NovaComputeCpuDedicatedSet: 4-51,56-103
+    NovaComputeCpuSharedSet: 0-3,52-55
+    ContrailSettings:
+      # Adjust for ContrailSriovMode: dpdk
+      # DPDK_UIO_DRIVER: uio_pci_generic
+      VROUTER_ENCRYPTION: false
+      BGP_ASN: 64520
+      BGP_AUTO_MESH: true
+      LACP_RATE: 0
+
+  ContrailSriovExtraConfig:
+    nova::cpu_allocation_ratio: 1
+    nova::compute::resume_guests_state_on_host_boot: true
+
+  ContrailDpdkParameters:
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=256 hugepagesz=2M hugepages=16384 tsx=off"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=256
+      vm.nr_hugepages:
+        value: 256
+      vm.max_map_count:
+        value: 128960
+    TunedProfileName: "cpu-partitioning"
+    # Allocate vCPUs 0, 1, 52 and 53 for host OS and
+    # isolate remaining CPUs
+    IsolCpusList: 2-51,54-103
+    # Leave vCPUs 2, 4, 6, 8, 54, 56,58 and 60 for DPDK
+    # Leave vCPUs 3 and 55 for vRouter service cores
+    # and allocate remaining for CPU pinned VMs
+    NovaComputeCpuDedicatedSet: 5,7,9-51,57,59,61-103
+    NovaComputeCpuSharedSet: 0-1,52-53
+    ContrailSettings:
+      DPDK_UIO_DRIVER: vfio-pci
+      VROUTER_ENCRYPTION: false
+      BGP_ASN: 64520
+      BGP_AUTO_MESH: true
+      LACP_RATE: 0
+      # Allocate vCPU 3 and 55 for service core
+      SERVICE_CORE_MASK: "0x80000000000008"
+      # Allocate vCPUs 0, 1, 52 and 53 for DPDK control
+      # These are the same CPUs as host OS
+      DPDK_CTRL_THREAD_MASK: "0x30000000000003"
+
+  ContrailDpdkExtraConfig:
+    nova::cpu_allocation_ratio: 1
+    nova::compute::resume_guests_state_on_host_boot: true
+
+  ComputeNFVParameters:
+    KernelArgs: "intel_iommu=on iommu=pt default_hugepagesz=1GB hugepagesz=1G hugepages=432 hugepagesz=2M hugepages=16384"
+    ExtraSysctlSettings:
+      # must be equal to value from 1G kernel args: hugepages=432
+      vm.nr_hugepages:
+        value: 432
+      vm.max_map_count:
+        value: 128960
+    TunedProfileName: "cpu-partitioning"
+    # Allocate vCPUs 0, 1, 52 and 53 for host OS and
+    # isolate remaining CPUs
+    IsolCpusList: 2-51,54-103
+    # Leave vCPUs 2, 4, 6, 8, 54, 56,58 and 60 for DPDK
+    # Leave vCPUs 3 and 55 for vRouter service cores
+    # and allocate remaining for CPU pinned VMs
+    NovaComputeCpuDedicatedSet: 5,7,9-51,57,59,61-103
+    NovaComputeCpuSharedSet: 0-1,52-53
+    ExtraKernelModules:
+      vfio: {}
+    ContrailSriovMode: 'dpdk'
+    NeutronPhysicalDevMappings:
+      - sriov1:ens1f0
+      - sriov2:ens1f1
+      - sriov3:ens4f1
+      - sriov4:ens5f0
+    ContrailSriovNumVFs:
+      - ens1f0:4
+      - ens1f1:4
+      - ens4f1:4
+      - ens5f0:4
+    NovaPCIPassthrough:
+      - devname: "ens1f0"
+        physical_network: "sriov1"
+      - devname: "ens1f1"
+        physical_network: "sriov2"
+      - devname: "ens4f1"
+        physical_network: "sriov3"
+      - devname: "ens5f0"
+        physical_network: "sriov4"
+    ContrailSettings:
+      DPDK_UIO_DRIVER: vfio-pci
+      VROUTER_ENCRYPTION: false
+      BGP_ASN: 64520
+      BGP_AUTO_MESH: true
+      LACP_RATE: 0
+      # Allocate vCPU 3 and 55 for service core
+      SERVICE_CORE_MASK: "0x80000000000008"
+      # Allocate vCPUs 0, 1, 52 and 53 for DPDK control
+      # These are the same CPUs as host OS
+      DPDK_CTRL_THREAD_MASK: "0x30000000000003"
+
+  ComputeNFVExtraConfig:
+    nova::cpu_allocation_ratio: 1
+    nova::compute::resume_guests_state_on_host_boot: true
+

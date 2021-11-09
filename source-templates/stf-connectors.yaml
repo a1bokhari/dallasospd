@@ -1,0 +1,10 @@
+parameter_defaults:
+    MetricsQdrConnectors:
+    - host: default-interconnect-5671-service-telemetry.apps.vimosp.tmeprj2.comm.red.ibm.gsc
+      port: 443
+      role: edge
+      sslProfile: sslProfile
+      verifyHostname: false
+
+    MetricsQdrSSLProfiles:
+    -   name: sslProfile

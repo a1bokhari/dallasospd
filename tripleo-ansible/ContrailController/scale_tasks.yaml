@@ -1,0 +1,6 @@
+- import_role:
+    name: redhat-subscription
+    tasks_from: unregister
+  name: Red Hat Subscription Management configuration during scale-down
+  tags: down
+  when: step|int == 1

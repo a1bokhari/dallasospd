@@ -1,0 +1,12 @@
+resource_registry:
+  OS::TripleO::Services::Rhsm: deployment/rhsm/rhsm-baremetal-ansible.yaml
+
+parameter_defaults:
+  RhsmVars:
+    rhsm_activation_key: "osp16-2-dev-overcloud"
+    rhsm_method: "satellite"
+    rhsm_org_id: "default"
+    rhsm_server_hostname: "satellite.mgmt.tmeprj2.comm.red.ibm.gsc"
+    rhsm_baseurl: "https://satellite.mgmt.tmeprj2.comm.red.ibm.gsc/pulp/repos"
+    rhsm_release: 8.4
+    rhsm_force_register: True

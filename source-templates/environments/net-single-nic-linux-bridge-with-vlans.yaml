@@ -1,0 +1,20 @@
+# This template configures each role to use Vlans on a single nic for
+# each isolated network.
+# This template assumes use of network-isolation.yaml.
+#
+# FIXME: if/when we add functionality to heatclient to include heat
+# environment files we should think about using it here to automatically
+# include network-isolation.yaml.
+resource_registry:
+  # Network configuration assignments for the Controller
+  OS::TripleO::Controller::Net::SoftwareConfig: ../network/config/single-nic-linux-bridge-vlans/controller.yaml
+  # Network configuration assignments for the Compute
+  OS::TripleO::Compute::Net::SoftwareConfig: ../network/config/single-nic-linux-bridge-vlans/compute.yaml
+  # Network configuration assignments for the ContrailController
+  OS::TripleO::ContrailController::Net::SoftwareConfig: ../network/config/single-nic-linux-bridge-vlans/contrailcontroller.yaml
+  # Network configuration assignments for the ContrailSriov
+  OS::TripleO::ContrailSriov::Net::SoftwareConfig: ../network/config/single-nic-linux-bridge-vlans/contrailsriov.yaml
+  # Network configuration assignments for the ContrailDpdk
+  OS::TripleO::ContrailDpdk::Net::SoftwareConfig: ../network/config/single-nic-linux-bridge-vlans/contraildpdk.yaml
+  # Network configuration assignments for the ComputeNFV
+  OS::TripleO::ComputeNFV::Net::SoftwareConfig: ../network/config/single-nic-linux-bridge-vlans/computenfv.yaml

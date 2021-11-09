@@ -1,0 +1,32 @@
+pre_network_ComputeNFV: 
+  - SriovHostParametersDeployment
+  - SriovContainerParametersDeployment
+
+pre_deployments_ComputeNFV: 
+  - ContrailNodeInitDeployment
+
+post_deployments_ComputeNFV:  [] 
+
+# ansible_host_vars managed by TripleO Heat Templates in puppet/role.role.j2.yaml:
+ctlplane_subnet_cidr: '24'
+external_cidr: '27'
+fqdn_canonical: computenfv-0.vimosp.local
+fqdn_ctlplane: computenfv-0.ctlplane.vimosp.local
+fqdn_external: computenfv-0.external.vimosp.local
+fqdn_internal_api: computenfv-0.internalapi.vimosp.local
+fqdn_storage: computenfv-0.storage.vimosp.local
+fqdn_storage_mgmt: computenfv-0.storagemgmt.vimosp.local
+fqdn_tenant: computenfv-0.tenant.vimosp.local
+hostname_resolve_network: internal_api
+internal_api_cidr: '24'
+network_cidrs:
+  External_cidr: '27'
+  InternalApi_cidr: '24'
+  StorageMgmt_cidr: '24'
+  Storage_cidr: '24'
+  Tenant_cidr: '24'
+ovn_chassis_mac_map: {}
+storage_cidr: '24'
+storage_mgmt_cidr: '24'
+tenant_cidr: '24'
+

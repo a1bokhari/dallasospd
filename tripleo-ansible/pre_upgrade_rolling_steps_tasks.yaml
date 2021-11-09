@@ -1,0 +1,24 @@
+- include_tasks: Controller/pre_upgrade_rolling_tasks.yaml
+  when: tripleo_role_name == 'Controller'
+  tags:
+    - always
+- include_tasks: Compute/pre_upgrade_rolling_tasks.yaml
+  when: tripleo_role_name == 'Compute'
+  tags:
+    - always
+- include_tasks: ContrailController/pre_upgrade_rolling_tasks.yaml
+  when: tripleo_role_name == 'ContrailController'
+  tags:
+    - always
+- include_tasks: ContrailSriov/pre_upgrade_rolling_tasks.yaml
+  when: tripleo_role_name == 'ContrailSriov'
+  tags:
+    - always
+- include_tasks: ContrailDpdk/pre_upgrade_rolling_tasks.yaml
+  when: tripleo_role_name == 'ContrailDpdk'
+  tags:
+    - always
+- include_tasks: ComputeNFV/pre_upgrade_rolling_tasks.yaml
+  when: tripleo_role_name == 'ComputeNFV'
+  tags:
+    - always

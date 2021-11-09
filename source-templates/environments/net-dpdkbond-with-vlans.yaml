@@ -1,0 +1,25 @@
+# NOTE: This environment file uses the compute-dpdk
+#
+# This template configures each role to use a pair of bonded nics (nic2 and
+# nic3) and configures an IP address on each relevant isolated network
+# for each role. The nic4 and nic5 are configured for dpdkbond and a provider
+# network shall be associated with it. This template assumes use of
+# network-isolation.yaml.
+#
+# FIXME: if/when we add functionality to heatclient to include heat
+# environment files we should think about using it here to automatically
+# include network-isolation.yaml.
+resource_registry:
+  # Network configuration assignments for the Controller
+  OS::TripleO::Controller::Net::SoftwareConfig: ../network/config/bond-with-vlans/controller.yaml
+  # Network configuration assignments for the ContrailController
+  OS::TripleO::ContrailController::Net::SoftwareConfig: ../network/config/bond-with-vlans/contrailcontroller.yaml
+  # Network configuration assignments for the ContrailSriov
+  OS::TripleO::ContrailSriov::Net::SoftwareConfig: ../network/config/bond-with-vlans/contrailsriov.yaml
+  # Network configuration assignments for the ContrailDpdk
+  OS::TripleO::ContrailDpdk::Net::SoftwareConfig: ../network/config/bond-with-vlans/contraildpdk.yaml
+  # Network configuration assignments for the ComputeNFV
+  OS::TripleO::ComputeNFV::Net::SoftwareConfig: ../network/config/bond-with-vlans/computenfv.yaml
+
+  # FIXME this won't handle any custom compute roles, instead we should have a generic way to override this
+  OS::TripleO::Compute::Net::SoftwareConfig: ../network/config/bond-with-vlans/compute-dpdk.yaml

@@ -1,0 +1,469 @@
+step_2:
+  nova_compute_init_log:
+    command:
+    - /bin/bash
+    - -c
+    - chown -R nova:nova /var/log/nova
+    environment:
+      TRIPLEO_DEPLOY_IDENTIFIER: DeployIdentifier
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-compute:16.2
+    net: none
+    privileged: false
+    user: root
+    volumes:
+    - /var/log/containers/nova:/var/log/nova:z
+step_3:
+  contrail_nova_plugin:
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_vrouter.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-openstack-compute-init:21.3.27-ubi
+    net: none
+    volumes:
+    - /var/lib/contrail/vrouter_port_control:/opt/plugin/bin:z
+    - /var/lib/contrail/vif_nova_contrail:/opt/plugin/site-packages/nova_contrail_vif:z
+    - /var/lib/contrail/vif_nova_contrail_egg:/opt/plugin/site-packages/nova_contrail_vif-0.1-py2.7.egg-info:z
+    - /var/lib/contrail/vif_plug_vrouter:/opt/plugin/site-packages/vif_plug_vrouter:z
+    - /var/lib/contrail/vif_plug_contrail_vrouter:/opt/plugin/site-packages/vif_plug_contrail_vrouter:z
+  iscsid:
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /openstack/healthcheck
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-iscsid:16.2
+    net: host
+    privileged: true
+    restart: always
+    start_order: 2
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/kolla/config_files/iscsid.json:/var/lib/kolla/config_files/config.json:ro
+    - /dev/:/dev/
+    - /run/:/run/
+    - /sys:/sys
+    - /lib/modules:/lib/modules:ro
+    - /etc/iscsi:/var/lib/kolla/config_files/src-iscsid:ro
+    - /etc/target:/etc/target:z
+    - /var/lib/iscsi:/var/lib/iscsi:z
+  nova_libvirt:
+    cpuset_cpus: all
+    depends_on:
+    - tripleo_nova_virtlogd.service
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /openstack/healthcheck libvirtd
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-libvirt:16.2
+    net: host
+    pid: host
+    pids_limit: 65536
+    privileged: true
+    restart: always
+    security_opt:
+    - label=level:s0
+    - label=type:spc_t
+    - label=filetype:container_share_t
+    start_order: 1
+    ulimit:
+    - nofile=131072
+    - nproc=126960
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/log/containers/libvirt:/var/log/libvirt:z
+    - /etc/ssh/ssh_known_hosts:/etc/ssh/ssh_known_hosts:ro
+    - /var/lib/kolla/config_files/nova_libvirt.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/config-data/puppet-generated/nova_libvirt:/var/lib/kolla/config_files/src:ro
+    - /var/lib/container-config-scripts/nova_libvirt_launcher.sh:/nova_libvirt_launcher.sh:ro
+    - /etc/ceph:/var/lib/kolla/config_files/src-ceph:ro
+    - /lib/modules:/lib/modules:ro
+    - /dev:/dev
+    - /run:/run
+    - /sys/fs/cgroup:/sys/fs/cgroup
+    - /etc/libvirt:/etc/libvirt
+    - /var/run/libvirt:/var/run/libvirt:shared
+    - /var/cache/libvirt:/var/cache/libvirt:shared
+    - /var/lib/libvirt:/var/lib/libvirt:shared
+    - /var/log/libvirt/qemu:/var/log/libvirt/qemu:ro
+    - /var/lib/vhost_sockets:/var/lib/vhost_sockets
+    - /var/lib/nova:/var/lib/nova:shared
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /etc/selinux/config:/etc/selinux/config:ro
+  nova_statedir_owner:
+    command: /container-config-scripts/pyshim.sh /container-config-scripts/nova_statedir_ownership.py
+    detach: false
+    environment:
+      NOVA_STATEDIR_OWNERSHIP_SKIP: triliovault-mounts
+      TRIPLEO_DEPLOY_IDENTIFIER: DeployIdentifier
+      __OS_DEBUG: 'false'
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-compute:16.2
+    net: none
+    privileged: false
+    security_opt: label=disable
+    user: root
+    volumes:
+    - /var/lib/nova:/var/lib/nova:shared
+    - /var/lib/_nova_secontext:/var/lib/_nova_secontext:shared,z
+    - /var/lib/container-config-scripts/:/container-config-scripts/:z
+  nova_virtlogd:
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /openstack/healthcheck virtlogd
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-libvirt:16.2
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    security_opt: label=disable
+    start_order: 0
+    ulimit:
+    - nofile=131072
+    - nproc=126960
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/kolla/config_files/nova_virtlogd.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/config-data/puppet-generated/nova_libvirt:/var/lib/kolla/config_files/src:ro
+    - /lib/modules:/lib/modules:ro
+    - /dev:/dev
+    - /run:/run
+    - /sys/fs/cgroup:/sys/fs/cgroup
+    - /var/run/libvirt:/var/run/libvirt:shared
+    - /var/lib/libvirt:/var/lib/libvirt
+    - /etc/libvirt/qemu:/etc/libvirt/qemu:ro
+    - /var/log/libvirt/qemu:/var/log/libvirt/qemu
+    - /var/lib/nova:/var/lib/nova:shared
+step_4:
+  ceilometer_agent_compute:
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /openstack/healthcheck
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-ceilometer-compute:16.2
+    net: host
+    privileged: false
+    restart: always
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/kolla/config_files/ceilometer_agent_compute.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/config-data/puppet-generated/ceilometer:/var/lib/kolla/config_files/src:ro
+    - /var/run/libvirt:/var/run/libvirt:ro
+    - /var/log/containers/ceilometer:/var/log/ceilometer:z
+  logrotate_crond:
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /usr/share/openstack-tripleo-common/healthcheck/cron
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-cron:16.2
+    net: none
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/kolla/config_files/logrotate-crond.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/config-data/puppet-generated/crond:/var/lib/kolla/config_files/src:ro
+    - /var/log/containers:/var/log/containers:z
+  nova_migration_target:
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /openstack/healthcheck
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-compute:16.2
+    net: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/kolla/config_files/nova-migration-target.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/config-data/puppet-generated/nova_libvirt:/var/lib/kolla/config_files/src:ro
+    - /etc/ssh/:/host-ssh/:ro
+    - /var/run/libvirt:/var/run/libvirt:shared,z
+    - /var/lib/nova:/var/lib/nova:shared
+step_5:
+  collectd:
+    cap_add:
+    - IPC_LOCK
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /openstack/healthcheck
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-collectd:16.2
+    net: host
+    pid: host
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/kolla/config_files/collectd.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/containers/storage/overlay-containers:/var/lib/containers/storage/overlay-containers:ro
+    - /var/lib/config-data/puppet-generated/collectd:/var/lib/kolla/config_files/src:ro
+    - /var/log/containers/collectd:/var/log/collectd:rw,z
+    - /var/run/:/var/run:rw
+    - /var/lib/container-config-scripts:/scripts:ro
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  contrail_vrouter_agent:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_vrouter.env
+    environment:
+      AUTH_MODE: keystone
+      KERNEL_INIT_VHOST0: true
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+      VROUTER_MODULE_OPTIONS: ''
+    image: hub.juniper.net/contrail-nightly/contrail-vrouter-agent:21.3.27-ubi
+    net: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_vrouter/:/var/lib/config-data/contrail_vrouter/:ro
+    - /dev:/dev
+    - /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts
+    - /lib/modules:/lib/modules
+    - /var/run:/var/run
+    - /var/lib/contrail:/var/lib/contrail:z
+  contrail_vrouter_agent_nodemgr:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_vrouter.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-nodemgr:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_vrouter/:/var/lib/config-data/contrail_vrouter/:ro
+    - /var/run:/var/run
+    - /run/runc:/run/runc
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /var/lib/containers:/var/lib/containers:shared
+    - /etc/containers:/etc/containers:ro
+    - /usr/share/containers:/usr/share/containers:ro
+    - /var/lib/contrail/loadbalancer:/var/lib/contrail/loadbalancer
+  contrail_vrouter_agent_provisioner:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_vrouter.env
+    environment:
+      APPLY_DEFAULTS: 'True'
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-provisioner:21.3.27-ubi
+    net: host
+    restart: on-failure
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_vrouter/:/var/lib/config-data/contrail_vrouter/:ro
+  nova_compute:
+    depends_on:
+    - tripleo_nova_libvirt.service
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+      LIBGUESTFS_BACKEND: direct
+      PATH: /sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin/:/opt/plugin/bin
+    healthcheck:
+      test: /openstack/healthcheck 5672
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-compute:16.2
+    ipc: host
+    net: host
+    privileged: true
+    restart: always
+    start_order: 3
+    ulimit:
+    - nofile=131072
+    - memlock=67108864
+    user: nova
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/log/containers/nova:/var/log/nova
+    - /var/lib/contrail/vrouter_port_control:/opt/plugin/bin:ro
+    - /var/lib/contrail:/var/lib/contrail:z
+    - /var/lib/contrail/vif_nova_contrail:/usr/lib/python3.6/site-packages/nova_contrail_vif:ro
+    - /var/lib/contrail/vif_nova_contrail_egg:/usr/lib/python3.6/site-packages/nova_contrail_vif-0.1-py2.7.egg-info:ro
+    - /var/lib/contrail/vif_plug_vrouter:/usr/lib/python3.6/site-packages/vif_plug_vrouter:ro
+    - /var/lib/contrail/vif_plug_contrail_vrouter:/usr/lib/python3.6/site-packages/vif_plug_contrail_vrouter:ro
+    - /etc/ssh/ssh_known_hosts:/etc/ssh/ssh_known_hosts:ro
+    - /var/lib/kolla/config_files/nova_compute.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/config-data/puppet-generated/nova_libvirt:/var/lib/kolla/config_files/src:ro
+    - /etc/iscsi:/var/lib/kolla/config_files/src-iscsid:ro
+    - /etc/ceph:/var/lib/kolla/config_files/src-ceph:ro
+    - /dev:/dev
+    - /lib/modules:/lib/modules:ro
+    - /run:/run
+    - /var/lib/iscsi:/var/lib/iscsi:z
+    - /var/lib/libvirt:/var/lib/libvirt:shared
+    - /sys/class/net:/sys/class/net
+    - /sys/bus/pci:/sys/bus/pci
+    - /boot:/boot:ro
+    - /var/lib/nova:/var/lib/nova:shared
+  nova_wait_for_compute_service:
+    command: /container-config-scripts/pyshim.sh /container-config-scripts/nova_wait_for_compute_service.py
+    detach: false
+    environment:
+      __OS_DEBUG: 'false'
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-compute:16.2
+    net: host
+    start_order: 4
+    user: nova
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/config-data/nova_libvirt/etc/nova/:/etc/nova/:ro
+    - /var/log/containers/nova:/var/log/nova
+    - /var/lib/container-config-scripts/:/container-config-scripts/

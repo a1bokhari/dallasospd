@@ -1,0 +1,109 @@
+#This file is an example of an environment file for defining the isolated
+#networks and related parameters.
+resource_registry:
+  # Network Interface templates to use (these files must exist). You can
+  # override these by including one of the net-*.yaml environment files,
+  # such as net-bond-with-vlans.yaml, or modifying the list here.
+  # Port assignments for the Controller
+  OS::TripleO::Controller::Net::SoftwareConfig:
+    ../network/config/single-nic-vlans/controller.yaml
+  # Port assignments for the Compute
+  OS::TripleO::Compute::Net::SoftwareConfig:
+    ../network/config/single-nic-vlans/compute.yaml
+  # Port assignments for the ContrailController
+  OS::TripleO::ContrailController::Net::SoftwareConfig:
+    ../network/config/single-nic-vlans/contrailcontroller.yaml
+  # Port assignments for the ContrailSriov
+  OS::TripleO::ContrailSriov::Net::SoftwareConfig:
+    ../network/config/single-nic-vlans/contrailsriov.yaml
+  # Port assignments for the ContrailDpdk
+  OS::TripleO::ContrailDpdk::Net::SoftwareConfig:
+    ../network/config/single-nic-vlans/contraildpdk.yaml
+  # Port assignments for the ComputeNFV
+  OS::TripleO::ComputeNFV::Net::SoftwareConfig:
+    ../network/config/single-nic-vlans/computenfv.yaml
+
+parameter_defaults:
+  # This section is where deployment-specific configuration is done
+  #
+  # NOTE: (Since Rocky)
+  # ControlPlaneSubnetCidr: It is no longer a requirement to provide the
+  #                         parameter. The attribute is resolved from the
+  #                         ctlplane subnet(s).
+  # ControlPlaneDefaultRoute: It is no longer a requirement to provide this
+  #                           parameter. The attribute is resolved from the
+  #                           ctlplane subnet(s).
+  # EC2MetadataIp: It is no longer a requirement to provide this parameter. The
+  #                attribute is resolved from the ctlplane subnet(s).
+  #
+
+  # Customize the IP subnet to match the local environment
+  ExternalNetCidr: '172.31.255.128/27'
+  # Customize the IP range to use for static IPs and VIPs
+  # Leave room if the external network is also used for floating IPs
+  ExternalAllocationPools: [{'start': '172.31.255.130', 'end': '172.31.255.140'}]
+  # Gateway router for routable networks
+  ExternalInterfaceDefaultRoute: '172.31.255.129'
+  # Customize the VLAN ID to match the local environment
+  ExternalNetworkVlanID: 100
+
+
+  # Customize the IP subnet to match the local environment
+  InternalApiNetCidr: '10.2.120.0/24'
+  # Customize the IP range to use for static IPs and VIPs
+  InternalApiAllocationPools: [{'start': '10.2.120.10', 'end': '10.2.120.200'}]
+  # Gateway router for routable networks
+  InternalApiInterfaceDefaultRoute: '10.2.120.1'
+  # Customize the VLAN ID to match the local environment
+  InternalApiNetworkVlanID: 120
+
+
+  # Customize the IP subnet to match the local environment
+  StorageNetCidr: '10.3.130.0/24'
+  # Customize the IP range to use for static IPs and VIPs
+  StorageAllocationPools: [{'start': '10.3.130.10', 'end': '10.3.130.200'}]
+  # Gateway router for routable networks
+  StorageInterfaceDefaultRoute: '10.3.130.1'
+  # Customize the VLAN ID to match the local environment
+  StorageNetworkVlanID: 130
+
+
+  # Customize the IP subnet to match the local environment
+  StorageMgmtNetCidr: '10.4.140.0/24'
+  # Customize the IP range to use for static IPs and VIPs
+  StorageMgmtAllocationPools: [{'start': '10.4.140.10', 'end': '10.4.140.200'}]
+  # Gateway router for routable networks
+  StorageMgmtInterfaceDefaultRoute: '10.4.140.1'
+  # Customize the VLAN ID to match the local environment
+  StorageMgmtNetworkVlanID: 140
+
+
+  # Customize the IP subnet to match the local environment
+  TenantNetCidr: '10.1.110.0/24'
+  # Customize the IP range to use for static IPs and VIPs
+  TenantAllocationPools: [{'start': '10.1.110.10', 'end': '10.1.110.200'}]
+  # Gateway router for routable networks
+  TenantInterfaceDefaultRoute: '10.1.110.1'
+  # Customize the VLAN ID to match the local environment
+  TenantNetworkVlanID: 110
+  # Routes to add to host_routes property of the subnets in neutron.
+  TenantRoutes: [{'destination': '10.45.0.0/24', 'nexthop': '10.1.110.1'}, {'destination': '172.31.255.192/27', 'nexthop': '10.1.110.1'}]
+  # MTU of the underlying physical network. Neutron uses this value to
+  # calculate MTU for all virtual network components. For flat and VLAN
+  # networks, neutron uses this value without modification. For overlay
+  # networks such as VXLAN, neutron automatically subtracts the overlay
+  # protocol overhead from this value.
+  TenantNetPhysnetMtu: 9000
+
+
+  # Define the DNS servers (maximum 2) for the overcloud nodes
+  # When the list is not set or empty, the nameservers on the ctlplane subnets will be used.
+  # (ctlplane subnets nameservers are controlled by the ``undercloud_nameservers`` option in ``undercloud.conf``)
+  DnsServers: []
+  # List of Neutron network types for tenant networks (will be used in order)
+  NeutronNetworkType: 'geneve,vlan'
+  # Neutron VLAN ranges per network, for example 'datacentre:1:499,tenant:500:1000':
+  NeutronNetworkVLANRanges: 'datacentre:1:1000'
+  # Customize bonding options, e.g. "mode=4 lacp_rate=1 updelay=1000 miimon=100"
+  # for Linux bonds w/LACP, or "bond_mode=active-backup" for OVS active/backup.
+  BondInterfaceOvsOptions: "bond_mode=active-backup"

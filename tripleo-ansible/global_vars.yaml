@@ -1,0 +1,520 @@
+all_nodes_extra_map_data: {}
+cloud_domain: vimosp.local
+cloud_names:
+  cloud_name_ctlplane: overcloud.ctlplane.vimosp.local
+  cloud_name_external: overcloud.vimosp.local
+  cloud_name_internal_api: overcloud.internalapi.vimosp.local
+  cloud_name_storage: overcloud.storage.vimosp.local
+  cloud_name_storage_mgmt: overcloud.storagemgmt.vimosp.local
+container_cli: podman
+control_virtual_ip: 10.62.62.100
+deploy_artifact_urls: ''
+deploy_identifier: DeployIdentifier
+deploy_steps_max: 6
+enable_internal_tls: false
+enable_paunch: true
+enabled_networks:
+- External
+- InternalApi
+- Storage
+- StorageMgmt
+- Tenant
+enabled_services:
+- keystone_admin_api
+- keystone_public_api
+- boot_params_service
+- ca_certs
+- ceilometer_agent_central
+- ceilometer_agent_notification
+- certmonger_user
+- cinder_api
+- cinder_scheduler
+- cinder_volume
+- clustercheck
+- collectd
+- container_image_prepare
+- contrail_heat_plugin
+- glance_api
+- haproxy
+- heat_api
+- heat_api_cloudwatch_disabled
+- heat_api_cfn
+- heat_engine
+- horizon
+- iscsid
+- kernel
+- keystone
+- memcached
+- metrics_qdr
+- mysql
+- mysql_client
+- neutron_api
+- contrail_neutron_plugin
+- nova_api
+- nova_conductor
+- nova_metadata
+- nova_scheduler
+- nova_vnc_proxy
+- logrotate_crond
+- pacemaker
+- placement
+- oslo_messaging_rpc
+- oslo_messaging_notify
+- podman
+- redis
+- rhsm
+- rsyslog
+- snmp
+- sshd
+- swift_proxy
+- swift_ringbuilder
+- swift_storage
+- chrony
+- timezone
+- tripleo_firewall
+- tripleo_packages
+- tuned
+- boot_params_service
+- ca_certs
+- certmonger_user
+- collectd
+- ceilometer_agent_compute
+- contrail_vrouter
+- iscsid
+- kernel
+- metrics_qdr
+- mysql_client
+- nova_compute
+- nova_libvirt
+- nova_libvirt_guests
+- nova_migration_target
+- logrotate_crond
+- podman
+- rhsm
+- rsyslog
+- snmp
+- sshd
+- chrony
+- timezone
+- tripleo_firewall
+- tripleo_packages
+- tuned
+- boot_params_service
+- ca_certs
+- certmonger_user
+- collectd
+- logrotate_crond
+- kernel
+- rhsm
+- podman
+- snmp
+- sshd
+- chrony
+- timezone
+- tripleo_packages
+- contrail_analytics
+- contrail_analytics_alarm
+- contrail_analytics_database
+- contrail_analytics_snmp
+- contrail_config
+- contrail_database
+- contrail_control
+- contrail_webui
+- tripleo_firewall
+- boot_params_service
+- ca_certs
+- certmonger_user
+- collectd
+- contrail_vrouter_sriov
+- ceilometer_agent_compute
+- podman
+- iscsid
+- kernel
+- mysql_client
+- nova_compute
+- nova_libvirt
+- nova_migration_target
+- logrotate_crond
+- rhsm
+- snmp
+- sshd
+- chrony
+- timezone
+- tripleo_firewall
+- tripleo_packages
+- tuned
+- boot_params_service
+- ca_certs
+- certmonger_user
+- collectd
+- contrail_vrouter_dpdk
+- ceilometer_agent_compute
+- logrotate_crond
+- podman
+- iscsid
+- kernel
+- mysql_client
+- nova_compute
+- nova_libvirt
+- nova_migration_target
+- rhsm
+- snmp
+- sshd
+- chrony
+- timezone
+- tripleo_firewall
+- tripleo_packages
+- tuned
+- boot_params_service
+- ca_certs
+- certmonger_user
+- collectd
+- contrail_vrouter_sriov
+- contrail_vrouter_dpdk
+- ceilometer_agent_compute
+- logrotate_crond
+- podman
+- iscsid
+- kernel
+- mysql_client
+- nova_compute
+- nova_libvirt
+- nova_migration_target
+- rhsm
+- snmp
+- sshd
+- chrony
+- timezone
+- tripleo_firewall
+- tripleo_packages
+- tuned
+external_net_name: external
+extra_hosts_entries: []
+hosts_entry:
+- 10.62.62.100  overcloud.ctlplane.vimosp.local
+- 172.31.255.130  overcloud.vimosp.local
+- 10.2.120.4  overcloud.internalapi.vimosp.local
+- 10.3.130.4  overcloud.storage.vimosp.local
+- 10.4.140.4  overcloud.storagemgmt.vimosp.local
+- 10.2.120.9 controller-0.vimosp.local controller-0
+- 172.31.255.135 controller-0.external.vimosp.local controller-0.external
+- 10.2.120.9 controller-0.internalapi.vimosp.local controller-0.internalapi
+- 10.3.130.5 controller-0.storage.vimosp.local controller-0.storage
+- 10.4.140.5 controller-0.storagemgmt.vimosp.local controller-0.storagemgmt
+- 10.62.62.105 controller-0.ctlplane.vimosp.local controller-0.ctlplane
+- 10.2.120.10 controller-1.vimosp.local controller-1
+- 172.31.255.136 controller-1.external.vimosp.local controller-1.external
+- 10.2.120.10 controller-1.internalapi.vimosp.local controller-1.internalapi
+- 10.3.130.6 controller-1.storage.vimosp.local controller-1.storage
+- 10.4.140.6 controller-1.storagemgmt.vimosp.local controller-1.storagemgmt
+- 10.62.62.106 controller-1.ctlplane.vimosp.local controller-1.ctlplane
+- 10.2.120.11 controller-2.vimosp.local controller-2
+- 172.31.255.137 controller-2.external.vimosp.local controller-2.external
+- 10.2.120.11 controller-2.internalapi.vimosp.local controller-2.internalapi
+- 10.3.130.7 controller-2.storage.vimosp.local controller-2.storage
+- 10.4.140.7 controller-2.storagemgmt.vimosp.local controller-2.storagemgmt
+- 10.62.62.107 controller-2.ctlplane.vimosp.local controller-2.ctlplane
+- 10.2.120.5 contrailcontroller-0.vimosp.local contrailcontroller-0
+- 172.31.255.131 contrailcontroller-0.external.vimosp.local contrailcontroller-0.external
+- 10.2.120.5 contrailcontroller-0.internalapi.vimosp.local contrailcontroller-0.internalapi
+- 10.1.110.5 contrailcontroller-0.tenant.vimosp.local contrailcontroller-0.tenant
+- 10.62.62.101 contrailcontroller-0.ctlplane.vimosp.local contrailcontroller-0.ctlplane
+- 10.2.120.6 contrailcontroller-1.vimosp.local contrailcontroller-1
+- 172.31.255.132 contrailcontroller-1.external.vimosp.local contrailcontroller-1.external
+- 10.2.120.6 contrailcontroller-1.internalapi.vimosp.local contrailcontroller-1.internalapi
+- 10.1.110.6 contrailcontroller-1.tenant.vimosp.local contrailcontroller-1.tenant
+- 10.62.62.102 contrailcontroller-1.ctlplane.vimosp.local contrailcontroller-1.ctlplane
+- 10.2.120.7 contrailcontroller-2.vimosp.local contrailcontroller-2
+- 172.31.255.133 contrailcontroller-2.external.vimosp.local contrailcontroller-2.external
+- 10.2.120.7 contrailcontroller-2.internalapi.vimosp.local contrailcontroller-2.internalapi
+- 10.1.110.7 contrailcontroller-2.tenant.vimosp.local contrailcontroller-2.tenant
+- 10.62.62.103 contrailcontroller-2.ctlplane.vimosp.local contrailcontroller-2.ctlplane
+- 10.2.120.12 computenfv-0.vimosp.local computenfv-0
+- 172.31.255.138 computenfv-0.external.vimosp.local computenfv-0.external
+- 10.2.120.12 computenfv-0.internalapi.vimosp.local computenfv-0.internalapi
+- 10.3.130.8 computenfv-0.storage.vimosp.local computenfv-0.storage
+- 10.4.140.8 computenfv-0.storagemgmt.vimosp.local computenfv-0.storagemgmt
+- 10.1.110.8 computenfv-0.tenant.vimosp.local computenfv-0.tenant
+- 10.62.62.108 computenfv-0.ctlplane.vimosp.local computenfv-0.ctlplane
+internal_api_net_name: internal_api
+keystone_resources:
+  ceilometer:
+    users:
+      ceilometer:
+        password: c5t2vc2nmzfxfcctcgrg4h29p
+        roles:
+        - admin
+  cinder:
+    users:
+      cinder:
+        password: mwlrs6bw45f6bbmzq9lb2p776
+        roles:
+        - admin
+        - service
+  cinderv2:
+    endpoints:
+      admin: http://10.2.120.4:8776/v2/%(tenant_id)s
+      internal: http://10.2.120.4:8776/v2/%(tenant_id)s
+      public: http://172.31.255.130:8776/v2/%(tenant_id)s
+    region: regionOne
+    service: volumev2
+    users:
+      cinderv2:
+        password: mwlrs6bw45f6bbmzq9lb2p776
+        roles:
+        - admin
+        - service
+  cinderv3:
+    endpoints:
+      admin: http://10.2.120.4:8776/v3/%(tenant_id)s
+      internal: http://10.2.120.4:8776/v3/%(tenant_id)s
+      public: http://172.31.255.130:8776/v3/%(tenant_id)s
+    region: regionOne
+    service: volumev3
+    users:
+      cinderv3:
+        password: mwlrs6bw45f6bbmzq9lb2p776
+        roles:
+        - admin
+        - service
+  glance:
+    endpoints:
+      admin: http://10.2.120.4:9292
+      internal: http://10.2.120.4:9292
+      public: http://172.31.255.130:9292
+    region: regionOne
+    service: image
+    users:
+      glance:
+        password: tdhxg4wpgp56mhb4d5bfs2jgb
+  heat:
+    domains:
+    - heat_stack
+    endpoints:
+      admin: http://10.2.120.4:8004/v1/%(tenant_id)s
+      internal: http://10.2.120.4:8004/v1/%(tenant_id)s
+      public: http://172.31.255.130:8004/v1/%(tenant_id)s
+    region: regionOne
+    roles:
+    - heat_stack_user
+    service: orchestration
+    users:
+      heat:
+        password: gc56chrwwv6c4tmqwwbcgc5f2
+      heat_stack_domain_admin:
+        domain: heat_stack
+        password: 4vlrnz2gn227kj5jbsn92sbm6
+        roles:
+        - admin
+  heat-cfn:
+    endpoints:
+      admin: http://10.2.120.4:8000/v1
+      internal: http://10.2.120.4:8000/v1
+      public: http://172.31.255.130:8000/v1
+    region: regionOne
+    service: cloudformation
+    users:
+      heat-cfn:
+        password: gc56chrwwv6c4tmqwwbcgc5f2
+  neutron:
+    endpoints:
+      admin: http://10.2.120.4:9696
+      internal: http://10.2.120.4:9696
+      public: http://172.31.255.130:9696
+    region: regionOne
+    service: network
+    users:
+      neutron:
+        password: jqfd8znjclkrmvnp62mgkmqj7
+  nova:
+    endpoints:
+      admin: http://10.2.120.4:8774/v2.1
+      internal: http://10.2.120.4:8774/v2.1
+      public: http://172.31.255.130:8774/v2.1
+    region: regionOne
+    service: compute
+    users:
+      nova:
+        password: 9sjllnf27xprs9hc9mvcddrkf
+        roles:
+        - admin
+        - service
+  placement:
+    endpoints:
+      admin: http://10.2.120.4:8778/placement
+      internal: http://10.2.120.4:8778/placement
+      public: http://172.31.255.130:8778/placement
+    region: regionOne
+    service: placement
+    users:
+      placement:
+        password: 29qc42rmjspjphfgbbx4ctjbp
+  swift:
+    endpoints:
+      admin: http://10.3.130.4:8080
+      internal: http://10.3.130.4:8080/v1/AUTH_%(tenant_id)s
+      public: http://172.31.255.130:8080/v1/AUTH_%(tenant_id)s
+    region: regionOne
+    roles:
+    - swiftoperator
+    - ResellerAdmin
+    service: object-store
+    users:
+      swift:
+        password: j5q7ff725q985sdq6rhgscqj9
+net_vip_map:
+  ctlplane: 10.62.62.100
+  ctlplane_uri: 10.62.62.100
+  external: 172.31.255.130
+  external_uri: 172.31.255.130
+  internal_api: 10.2.120.4
+  internal_api_uri: 10.2.120.4
+  ovn_dbs: 10.62.62.100
+  redis: 10.62.62.100
+  storage: 10.3.130.4
+  storage_mgmt: 10.4.140.4
+  storage_mgmt_uri: 10.4.140.4
+  storage_uri: 10.3.130.4
+network_virtual_ips:
+  ctlplane:
+    index: 1
+    ip_address: 10.62.62.100
+  internal_api:
+    index: 3
+    ip_address: 10.2.120.4
+  storage:
+    index: 4
+    ip_address: 10.3.130.4
+  storage_mgmt:
+    index: 5
+    ip_address: 10.4.140.4
+networks:
+  External:
+    name: external
+    name_lower: external
+  InternalApi:
+    name: internal_api
+    name_lower: internal_api
+  Storage:
+    name: storage
+    name_lower: storage
+  StorageMgmt:
+    name: storage_mgmt
+    name_lower: storage_mgmt
+  Tenant:
+    name: tenant
+    name_lower: tenant
+nova_additional_cell: false
+ping_test_ips:
+  Compute: '     '
+  ComputeNFV: 10.62.62.108 172.31.255.138 10.2.120.12 10.3.130.8 10.4.140.8 10.1.110.8
+  ContrailController: 10.62.62.101 172.31.255.131 10.2.120.5 10.1.110.5
+  ContrailDpdk: '     '
+  ContrailSriov: '     '
+  Controller: 10.62.62.105 172.31.255.135 10.2.120.9 10.3.130.5 10.4.140.5
+primary_role_name: Controller
+service_net_map:
+  aodh_api_network: internal_api
+  apache_network: internal_api
+  barbican_api_network: internal_api
+  bindnetwork: external
+  ceph_cluster_network: storage_mgmt
+  ceph_dashboard_network: storage
+  ceph_grafana_network: storage
+  ceph_mon_network: storage
+  ceph_rgw_network: storage
+  cinder_api_network: internal_api
+  cinder_iscsi_network: storage
+  compute_hostname_resolve_network: internal_api
+  compute_metrics_qdr_network: internal_api
+  compute_nfvhostname_resolve_network: internal_api
+  compute_nfvmetrics_qdr_network: internal_api
+  compute_nfvnetwork: tenant
+  contrail_analytics_alarm_network: internal_api
+  contrail_analytics_database_network: internal_api
+  contrail_analytics_network: internal_api
+  contrail_analytics_snmp_network: internal_api
+  contrail_certmonger_user_network: internal_api
+  contrail_config_network: internal_api
+  contrail_control_network: tenant
+  contrail_control_only_network: tenant
+  contrail_controller_hostname_resolve_network: internal_api
+  contrail_controller_metrics_qdr_network: internal_api
+  contrail_database_network: internal_api
+  contrail_dpdk_hostname_resolve_network: internal_api
+  contrail_dpdk_metrics_qdr_network: internal_api
+  contrail_dpdk_network: tenant
+  contrail_issu_control_network: tenant
+  contrail_issu_network: internal_api
+  contrail_issu_script_network: internal_api
+  contrail_sriov_hostname_resolve_network: internal_api
+  contrail_sriov_metrics_qdr_network: internal_api
+  contrail_sriov_network: tenant
+  contrail_vrouter_network: tenant
+  contrail_webui_network: internal_api
+  controller_hostname_resolve_network: internal_api
+  controller_metrics_qdr_network: internal_api
+  designate_api_network: internal_api
+  docker_registry_network: ctlplane
+  ec2_api_metadata_network: internal_api
+  ec2_api_network: internal_api
+  etcd_network: internal_api
+  ganesha_network: ctlplane
+  glance_api_edge_network: internal_api
+  glance_api_network: internal_api
+  gnocchi_api_network: internal_api
+  haproxy_network: ctlplane
+  heat_api_cfn_network: internal_api
+  heat_api_cloudwatch_network: internal_api
+  heat_api_network: internal_api
+  horizon_network: internal_api
+  ironic_api_network: ctlplane
+  ironic_inspector_network: ctlplane
+  ironic_network: ctlplane
+  keystone_admin_api_network: ctlplane
+  keystone_public_api_network: internal_api
+  manila_api_network: internal_api
+  memcached_network: internal_api
+  mistral_api_network: internal_api
+  mongodb_network: internal_api
+  mysql_network: internal_api
+  neutron_api_network: internal_api
+  neutron_tenant_network: tenant
+  nova_api_network: internal_api
+  nova_libvirt_network: internal_api
+  nova_metadata_network: internal_api
+  nova_vnc_proxy_network: internal_api
+  novajoin_network: internal_api
+  octavia_api_network: internal_api
+  opendaylight_api_network: internal_api
+  oslo_messaging_notify_network: internal_api
+  oslo_messaging_rpc_network: internal_api
+  ovn_dbs_network: internal_api
+  pacemaker_network: internal_api
+  pacemaker_remote_network: internal_api
+  panko_api_network: internal_api
+  placement_network: internal_api
+  public_network: external
+  qdr_network: internal_api
+  rabbitmq_network: internal_api
+  redis_network: internal_api
+  sahara_api_network: internal_api
+  snmpd_network: ctlplane
+  swift_proxy_network: storage
+  swift_storage_network: storage_mgmt
+  zaqar_api_network: internal_api
+stack_action: CREATE
+stack_update_type: ''
+storage_mgmt_net_name: storage_mgmt
+storage_net_name: storage
+tenant_net_name: tenant
+undercloud_hosts_entries: []
+validate_controllers_icmp: true
+validate_fqdn: false
+validate_gateways_icmp: true
+vip_hosts_entries:
+- 10.62.62.100  overcloud.ctlplane.vimosp.local
+- 172.31.255.130  overcloud.vimosp.local
+- 10.2.120.4  overcloud.internalapi.vimosp.local
+- 10.3.130.4  overcloud.storage.vimosp.local
+- 10.4.140.4  overcloud.storagemgmt.vimosp.local

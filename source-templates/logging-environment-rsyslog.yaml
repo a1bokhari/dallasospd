@@ -1,0 +1,14 @@
+## A Heat environment file which can be used to set up
+## logging agents
+
+resource_registry:
+  OS::TripleO::Services::Rsyslog: deployment/logging/rsyslog-container-puppet.yaml
+
+parameter_defaults:
+  RsyslogElasticsearchSetting:
+    uid: "elastic"
+    pwd: "yourownpassword"
+    skipverifyhost: "on"
+    allowunsignedcerts: "on"
+    server: "https://log-store-service-telemetry.apps.stfcloudops1.lab.upshift.rdu2.redhat.com"
+    serverport: 443

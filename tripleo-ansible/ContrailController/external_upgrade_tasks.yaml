@@ -1,0 +1,151 @@
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop logrotate container
+    vars:
+      tripleo_containers_to_stop:
+      - logrotate_crond
+      tripleo_delegate_to: '{{ groups[''logrotate_crond''] | default([]) }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when:
+  - step|int == 1
+- block:
+  - include_role:
+      name: tripleo-persist
+      tasks_from: cleanup.yml
+    name: cleanup tripleo_persist
+  name: Clean up upgrade artifacts
+  tags:
+  - never
+  - system_upgrade_cleanup
+  when: step|int == 1
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop analytics containers
+    vars:
+      tripleo_containers_to_stop:
+      - contrail_analytics_nodemgr
+      - contrail_analytics_api
+      - contrail_analytics_collector
+      - contrail_analytics_provisioner
+      - contrail_analytics_queryengine
+      - contrail_redis
+      - contrail_stunnel
+      tripleo_delegate_to: '{{ groups[''contrail_analytics''] | default([]) }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when: step|int == 1
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop analytics alarm containers
+    vars:
+      tripleo_containers_to_stop:
+      - contrail_analytics_alarmgen
+      - contrail_analytics_alarm_nodemgr
+      - contrail_analytics_alarm_provisioner
+      tripleo_delegate_to: '{{ groups[''contrail_analytics_alarm''] | default([])
+        }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when: step|int == 1
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop analytics database containers
+    vars:
+      tripleo_containers_to_stop:
+      - contrail_analytics_database_nodemgr
+      - contrail_analytics_database_provisioner
+      - contrail_analytics_queryengine
+      tripleo_delegate_to: '{{ groups[''contrail_analytics_database''] | default([])
+        }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when: step|int == 1
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop analytics snmp containers
+    vars:
+      tripleo_containers_to_stop:
+      - contrail_analytics_topology
+      - contrail_analytics_snmp_collector
+      - contrail_analytics_snmp_nodemgr
+      - contrail_analytics_snmp_provisioner
+      tripleo_delegate_to: '{{ groups[''contrail_analytics_snmp''] | default([]) }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when: step|int == 1
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop config containers
+    vars:
+      tripleo_containers_to_stop:
+      - contrail_config_provisioner
+      - contrail_config_nodemgr
+      - contrail_config_api
+      - contrail_config_schema
+      - contrail_config_svc_monitor
+      - contrail_config_device_manager
+      tripleo_delegate_to: '{{ groups[''contrail_config''] | default([]) }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when: step|int == 1
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop config database containers
+    vars:
+      tripleo_containers_to_stop:
+      - contrail_config_database_nodemgr
+      - contrail_config_database_provisioner
+      tripleo_delegate_to: '{{ groups[''contrail_database''] | default([]) }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when: step|int == 1
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop control containers
+    vars:
+      tripleo_containers_to_stop:
+      - contrail_control_provisioner
+      - contrail_control_nodemgr
+      tripleo_delegate_to: '{{ groups[''contrail_control''] | default([]) }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when: step|int == 1
+- block:
+  - import_role:
+      name: tripleo-container-stop
+    name: Stop webui containers
+    vars:
+      tripleo_containers_to_stop:
+      - contrail_webui_job
+      - contrail_webui_web
+      tripleo_delegate_to: '{{ groups[''contrail_webui''] | default([]) }}'
+  tags:
+  - never
+  - system_upgrade_transfer_data
+  - system_upgrade_stop_services
+  when: step|int == 1

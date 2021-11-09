@@ -1,0 +1,179 @@
+- import_role:
+    name: redhat-subscription
+  name: Red Hat Subscription Management configuration
+  vars:
+    rhsm_activation_key: osp16-2-dev-overcloud
+    rhsm_baseurl: https://satellite.mgmt.tmeprj2.comm.red.ibm.gsc/pulp/repos
+    rhsm_force_register: true
+    rhsm_method: satellite
+    rhsm_org_id: default
+    rhsm_release: 8.4
+    rhsm_repos_purge: true
+    rhsm_server_hostname: satellite.mgmt.tmeprj2.comm.red.ibm.gsc
+  when: step|int == 0
+- block:
+  - command: systemctl is-enabled --quiet snmpd
+    failed_when: false
+    name: Check if snmpd is enabled
+    register: snmpd_enabled_result
+  - name: Set fact snmpd_enabled
+    set_fact:
+      snmpd_enabled: '{{ snmpd_enabled_result.rc == 0 }}'
+  when: step|int == 0
+- name: Gather missing facts
+  setup:
+    gather_subset: distribution
+  tags:
+  - always
+  when: ansible_facts['distribution'] is not defined or ansible_facts['distribution_major_version']
+    is not defined
+- name: Set leapp facts
+  set_fact:
+    upgrade_leapp_command_options: ''
+    upgrade_leapp_debug: true
+    upgrade_leapp_devel_skip: ''
+    upgrade_leapp_enabled: "{{ _upgradeLeappEnabled | bool and\n   ansible_facts['distribution']\
+      \ == 'RedHat' and\n   ansible_facts['distribution_major_version'] is version('7',\
+      \ '==') }}"
+    upgrade_leapp_post_reboot_delay: 120
+    upgrade_leapp_reboot_timeout: 3600
+  tags:
+  - always
+  vars:
+    _upgradeLeappEnabled: false
+- block:
+  - name: Run UpgradeInitCommand
+    shell: '#!/bin/bash
+
+
+      '
+  - name: Run UpgradeInitCommonCommand
+    shell: '#!/bin/bash
+
+
+      '
+  - dnf:
+      name: '@{{ item.module }}:{{ item.stream }}/{{ item.profile|default(''common'')
+        }}'
+      state: present
+    loop: '{{ dnf_module_list|list }}'
+    name: Ensure DNF modules have the right stream
+    vars:
+      dnf_module_list: []
+    when:
+    - ansible_facts['distribution_major_version'] is version('8', '>=')
+    - dnf_module_list|length > 0
+  - delay: 10
+    name: Ensure EL modules are in proper state
+    register: _dnf_distro_sync
+    retries: 5
+    shell: dnf -y distro-sync
+    until: _dnf_distro_sync is success
+    when: ansible_facts['distribution_major_version'] == '8'
+  - name: Clean up Python 2 packages
+    package:
+      name: python2-*
+      state: absent
+    when: ansible_facts['distribution_major_version'] == '8'
+  - name: Ensure TripleO prerequisite packages are installed
+    package:
+      name:
+      - jq
+      - lvm2
+      - net-snmp
+      - openstack-selinux
+      - os-net-config
+      - puppet-tripleo
+      - python3-heat-agent*
+      - rsync
+      state: present
+    when: ansible_facts['distribution_major_version'] is version('8', '==')
+  name: Package and repo update tasks
+  when: step|int == 0
+- name: Set boolean skip_package_update
+  set_fact:
+    skip_package_update: false
+- block:
+  - ignore_errors: true
+    name: Log contrail_config_database inspect
+    shell: '{{ container_cli }} inspect contrail_config_database > /tmp/contrail_config_database_inspect
+      2>&1
+
+      '
+  - ignore_errors: true
+    name: Find out current volume name of contrail_config_database container for old
+      mount path
+    register: contrail_config_database_volume_name
+    shell: '{{ container_cli }} inspect contrail_config_database | jq -r ''.[].Mounts
+      | .[] | select(.Destination =="/var/lib/cassandra/data") | .Name''
+
+      '
+  - ignore_errors: true
+    name: Log contrail_config_database_volume_name
+    shell: 'echo {{ contrail_config_database_volume_name.stdout }} > /tmp/contrail_config_database_volume_name
+      2>&1
+
+      '
+  - block:
+    - ignore_errors: true
+      name: Stop previous contrail_config_database container
+      shell: '{{ container_cli }} stop contrail_config_database
+
+        '
+    - name: Get contrail_config_database_volume_name location
+      register: contrail_config_database_volume_location
+      shell: '{{ container_cli }} inspect {{ contrail_config_database_volume_name.stdout
+        }} | jq -r ''.[].Mountpoint''
+
+        '
+    - name: Make contrail_config_database_volume data subfolder
+      shell: 'mkdir -p {{ contrail_config_database_volume_location.stdout }}/data
+
+        '
+      when: contrail_config_database_volume_location.stdout != ''
+    - name: Move contrail_config_database_volume data subfolder
+      shell: 'find {{ contrail_config_database_volume_location.stdout }} -maxdepth
+        1 -mindepth 1 -path {{ contrail_config_database_volume_location.stdout }}/data
+        -o -prune -execdir mv {} {{ contrail_config_database_volume_location.stdout
+        }}/data/ \;
+
+        '
+      when: contrail_config_database_volume_location.stdout != ''
+    - name: Find out commitlog volume for contrail_config_database container for old
+        mount path
+      register: contrail_config_database_log_volume_name
+      shell: '{{ container_cli }} inspect contrail_config_database | jq -r ''.[].Mounts
+        | .[] | select(.Destination =="/var/lib/cassandra") | .Name''
+
+        '
+    - name: Log contrail_config_database_log_volume_name
+      shell: 'echo {{ contrail_config_database_log_volume_name.stdout }} > /tmp/contrail_config_database_log_volume_name
+        2>&1
+
+        '
+    - block:
+      - name: Log contrail_config_database_log_volume inspect
+        shell: '{{ container_cli }} inspect {{ contrail_config_database_log_volume_name.stdout
+          }} > /tmp/contrail_config_database_log_volume_inspect 2>&1
+
+          '
+      - name: Get contrail_config_database_log_volume_name location
+        register: contrail_config_database_log_volume_location
+        shell: '{{ container_cli }} inspect {{ contrail_config_database_log_volume_name.stdout
+          }} | jq -r ''.[].Mountpoint''
+
+          '
+      - name: Move commitlog, hints, etc to the new volume
+        shell: 'find {{ contrail_config_database_log_volume_location.stdout }} -maxdepth
+          1 -mindepth 1 -path {{ contrail_config_database_log_volume_location.stdout
+          }}/data -o -prune -execdir mv {} {{ contrail_config_database_volume_location.stdout
+          }}/ \;
+
+          '
+        when: contrail_config_database_log_volume_location.stdout != ''
+      name: Move data  from unnamed volume to new named one
+      when: contrail_config_database_log_volume_name.stdout != ''
+    name: Move contrail_config_database_volume folders to the data subfolder
+    when: contrail_config_database_volume_name.stdout != ''
+  name: Upgrade contrail_config_database data
+  when: step|int == 0

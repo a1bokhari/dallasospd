@@ -1,0 +1,7 @@
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-collectd:16.2
+  config_volume: collectd
+  puppet_tags: collectd_client_config,exec
+  step_config: include ::tripleo::profile::base::metrics::collectd
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-cron:16.2
+  config_volume: crond
+  step_config: include ::tripleo::profile::base::logging::logrotate

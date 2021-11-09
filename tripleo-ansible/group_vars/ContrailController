@@ -1,0 +1,367 @@
+any_errors_fatal: 'True'
+chrony_acl_rules:
+- deny all
+chrony_global_pool_settings: iburst minpoll 6 maxpoll 10
+chrony_global_server_settings: iburst minpoll 6 maxpoll 10
+chrony_manage_package: true
+chrony_ntp_pools: []
+chrony_ntp_servers:
+- 172.16.0.1
+chrony_role_action: all
+extraconfig:
+  tripleo::profile::base::metrics::qdr::interior_mesh_nodes: ''
+  tripleo::profile::base::metrics::qdr::router_mode: edge
+hieradata_files:
+- '%{::uuid}'
+- fqdn
+- docker_puppet
+- ansible_managed
+- heat_config_%{::deploy_config_name}
+- config_step
+- role_extraconfig
+- extraconfig
+- pci_passthrough_whitelist
+- service_names
+- service_configs
+- cloud_domain
+- bootstrap_node
+- all_nodes
+- vip_data
+- net_ip_map
+- '%{::osfamily}'
+- neutron_bigswitch_data
+- upgrade
+hieradata_localhost_address: localhost
+max_fail_percentage: 0
+network_deployment_actions:
+- CREATE
+neutron_physical_bridge_name: br-ex
+neutron_public_interface_name: nic1
+role_extraconfig:
+  tripleo::profile::base::metrics::collectd::sensubility::subscriptions: []
+role_networks:
+- External
+- InternalApi
+- Tenant
+service_configs:
+  certmonger_ca: IPA
+  collectd::interval: 5
+  collectd::manage_repo: false
+  collectd::minimum_version: '5.7'
+  collectd::plugin::cpu::reportbycpu: true
+  collectd::plugin::cpu::reportbystate: true
+  collectd::plugin::cpu::reportnumcpu: false
+  collectd::plugin::cpu::valuespercentage: true
+  collectd::plugin::df::fstypes:
+  - xfs
+  collectd::plugin::df::ignoreselected: true
+  collectd::plugin::df::reportbydevice: true
+  collectd::plugin::load::reportrelative: true
+  collectd::plugin::logfile::log_file: /var/log/collectd/collectd.log
+  collectd::plugin::memcached::instances:
+    local:
+      host: '%{hiera(''memcached::listen_ip_uri'')}'
+      port:
+      - 11211
+  collectd::plugin::unixsock::deletesocket: true
+  collectd::plugin::unixsock::socketfile: /var/run/collectd-socket
+  collectd::plugin::unixsock::socketgroup: root
+  collectd::plugin::virt::connection: qemu:///system
+  collectd::plugin::virt::extra_stats: pcpu cpu_util vcpupin vcpu memory disk disk_err
+    disk_allocation disk_capacity disk_physical domain_state job_stats_background
+    perf
+  collectd::plugin::virt::hostname_format: hostname
+  collectd::purge: true
+  collectd::purge_config: true
+  collectd::recurse: true
+  contrail::aaa_mode: cloud-admin
+  contrail::admin_password: hcw8m54r92mms97hbhj27l2vc
+  contrail::admin_tenant_name: admin
+  contrail::admin_token: ''
+  contrail::admin_user: admin
+  contrail::api_port: '8082'
+  contrail::auth_host: 10.62.62.100
+  contrail::auth_port: '35357'
+  contrail::auth_protocol: http
+  contrail::keystone_project_domain_name: Default
+  contrail::keystone_region: regionOne
+  contrail::keystone_user_domain_name: Default
+  contrail_config_vip: '%{hiera(''cloud_name_internal_api'')}'
+  contrail_control_host_ip: '%{hiera(''tenant'')}'
+  contrail_control_hostname: '%{hiera(''fqdn_tenant'')}'
+  contrail_internal_api_ssl: false
+  contrail_settings:
+    BGP_ASN: 64520
+    BGP_AUTO_MESH: true
+    HEAP_NEWSIZE: 2G
+    MAX_HEAP_SIZE: 16G
+    VROUTER_ENCRYPTION: false
+    VROUTER_GATEWAY: 10.1.110.1
+  contrail_ssl_enabled: false
+  node_data_lookup: {}
+  oslo_messaging_notify_password: kfczhblgfz47mrz5ghbflzmzp
+  oslo_messaging_notify_port: 5672
+  oslo_messaging_notify_scheme: rabbit
+  oslo_messaging_notify_use_ssl: 'False'
+  oslo_messaging_notify_user_name: guest
+  oslo_messaging_rpc_password: kfczhblgfz47mrz5ghbflzmzp
+  oslo_messaging_rpc_port: 5672
+  oslo_messaging_rpc_scheme: rabbit
+  oslo_messaging_rpc_use_ssl: 'False'
+  oslo_messaging_rpc_user_name: guest
+  snmp::agentaddress:
+  - udp:161
+  - udp6:[::1]:161
+  snmp::snmpd_options: -LS0-5d
+  tripleo.collectd.plugins.collectd:
+  - cpu
+  - df
+  - disk
+  - hugepages
+  - interface
+  - load
+  - memory
+  - processes
+  - unixsock
+  - uptime
+  - vmem
+  tripleo.collectd.plugins.memcached:
+  - memcached
+  tripleo.collectd.plugins.nova_compute:
+  - virt
+  tripleo.contrail_analytics.firewall_rules:
+    117 contrail_analytics:
+      dport:
+      - 3514
+      - 8081
+      - 8086
+      - 8089
+      - 8090
+      - 8181
+      - 8104
+      - 6379
+  tripleo.contrail_analytics_alarm.firewall_rules:
+    120 contrail_analytics_alarm:
+      dport:
+      - 5995
+      - 8113
+      - 2182
+      - 4888-5888
+      - 9092
+  tripleo.contrail_analytics_database.firewall_rules:
+    115 contrail_analytics_database:
+      dport:
+      - 7010
+      - 7011
+      - 7200
+      - 8103
+      - 9042
+      - 9160
+      - 8091
+  tripleo.contrail_analytics_snmp.firewall_rules:
+    119 contrail_analytics_snmp:
+      dport:
+      - 5920
+      - 5921
+      - 8114
+  tripleo.contrail_config.firewall_rules:
+    118 contrail_config:
+      dport:
+      - 8082
+      - 8084
+      - 8087
+      - 8088
+      - 8096
+      - 8100
+      - 8101
+  tripleo.contrail_control.firewall_rules:
+    113 contrail_control_dns:
+      dport:
+      - 53
+      - 8092
+      proto: udp
+    113 contrail_control_tcp:
+      dport:
+      - 179
+      - 5269
+      - 8083
+      - 8092
+      - 8093
+      - 8094
+      - 8101
+  tripleo.contrail_database.firewall_rules:
+    114 contrail_database:
+      dport:
+      - 2181
+      - 2888-3888
+      - 4369
+      - 5673
+      - 7012
+      - 7013
+      - 7201
+      - 8112
+      - 9041
+      - 9161
+      - 15673
+      - 25673
+      - 25684-25694
+  tripleo.contrail_webui.firewall_rules:
+    116 contrail_webui:
+      dport:
+      - 3000
+      - 3002
+      - 8143
+      - 8180
+      - 6379
+  tripleo::chrony::firewall_rules:
+    105 ntp:
+      dport: 123
+      proto: udp
+  tripleo::firewall::manage_firewall: true
+  tripleo::firewall::purge_firewall_rules: false
+  tripleo::packages::enable_install: true
+  tripleo::profile::base::logging::logrotate::dateext: false
+  tripleo::profile::base::logging::logrotate::maxsize: 10M
+  tripleo::profile::base::logging::logrotate::purge_after_days: '14'
+  tripleo::profile::base::logging::logrotate::rotate: '14'
+  tripleo::profile::base::logging::logrotate::rotation: daily
+  tripleo::profile::base::metrics::collectd::amqp_address: collectd
+  tripleo::profile::base::metrics::collectd::amqp_host: '%{hiera(''internal_api'')}'
+  tripleo::profile::base::metrics::collectd::amqp_instances:
+    notify:
+      format: JSON
+      notify: true
+      presettle: false
+    telemetry:
+      format: JSON
+      presettle: false
+  tripleo::profile::base::metrics::collectd::amqp_interval: 5
+  tripleo::profile::base::metrics::collectd::amqp_password: guest
+  tripleo::profile::base::metrics::collectd::amqp_port: 5666
+  tripleo::profile::base::metrics::collectd::amqp_retry_delay: 1
+  tripleo::profile::base::metrics::collectd::amqp_transport_name: metrics
+  tripleo::profile::base::metrics::collectd::amqp_user: guest
+  tripleo::profile::base::metrics::collectd::enable_file_logging: true
+  tripleo::profile::base::metrics::collectd::enable_libpodstats: true
+  tripleo::profile::base::metrics::collectd::enable_sensubility: true
+  tripleo::profile::base::metrics::collectd::sensubility::amqp_port: 5666
+  tripleo::profile::base::metrics::collectd::sensubility::checks:
+    check-container-health:
+      command: /scripts/collectd_check_health.py
+      handlers: []
+      interval: 10
+      occurrences: 3
+      refresh: 90
+      standalone: true
+  tripleo::profile::base::metrics::collectd::sensubility::client_address: '%{hiera(''internal_api'')}'
+  tripleo::profile::base::metrics::collectd::sensubility::client_name: '%{hiera(''fqdn_internal_api'')}'
+  tripleo::profile::base::metrics::collectd::sensubility::connection: amqp://sensu:sensu@localhost:5672//sensu
+  tripleo::profile::base::metrics::collectd::sensubility::keepalive_interval: 20
+  tripleo::profile::base::metrics::collectd::sensubility::log_level: WARNING
+  tripleo::profile::base::metrics::collectd::sensubility::results_channel: sensubility/telemetry
+  tripleo::profile::base::metrics::collectd::sensubility::shell_path: /usr/bin/bash
+  tripleo::profile::base::metrics::collectd::sensubility::tmp_base_dir: /var/tmp/collectd-sensubility-checks
+  tripleo::profile::base::metrics::collectd::sensubility::transport: amqp1
+  tripleo::profile::base::metrics::collectd::sensubility::worker_count: 2
+  tripleo::profile::base::snmp::snmpd_password: tggbc57grqcqcn4pkmgxfbl2
+  tripleo::profile::base::snmp::snmpd_user: ro_snmp_user
+  tripleo::profile::base::sshd::bannertext: ''
+  tripleo::profile::base::sshd::motd: ''
+  tripleo::profile::base::sshd::options:
+    AcceptEnv:
+    - LANG LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY LC_MESSAGES
+    - LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT
+    - LC_IDENTIFICATION LC_ALL LANGUAGE
+    - XMODIFIERS
+    AuthorizedKeysFile: .ssh/authorized_keys
+    ChallengeResponseAuthentication: 'no'
+    GSSAPIAuthentication: 'yes'
+    GSSAPICleanupCredentials: 'no'
+    HostKey:
+    - /etc/ssh/ssh_host_rsa_key
+    - /etc/ssh/ssh_host_ecdsa_key
+    - /etc/ssh/ssh_host_ed25519_key
+    Subsystem: sftp  /usr/libexec/openssh/sftp-server
+    SyslogFacility: AUTHPRIV
+    UseDNS: 'no'
+    UsePAM: 'yes'
+    UsePrivilegeSeparation: sandbox
+    X11Forwarding: 'yes'
+  tripleo::profile::base::sshd::password_authentication: 'no'
+  tripleo::rhsm::firewall_rules: {}
+  tripleo::snmp::firewall_rules:
+    124 snmp 10.62.62.0/24:
+      dport: 161
+      proto: udp
+      source: 10.62.62.0/24
+  tripleo::sshd::firewall_rules:
+    003 accept ssh from all:
+      dport: 22
+      extras:
+        ensure: absent
+      proto: tcp
+  tripleo::tripleo_firewall::firewall_rules:
+    003 accept ssh from ctlplane subnet 10.62.62.0/24:
+      dport: 22
+      proto: tcp
+      source: 10.62.62.0/24
+  tripleo::trusted_cas::ca_map: {}
+  use_tls_for_nbd: true
+service_metadata_settings: null
+service_names:
+- boot_params_service
+- ca_certs
+- certmonger_user
+- collectd
+- logrotate_crond
+- kernel
+- rhsm
+- podman
+- snmp
+- sshd
+- chrony
+- timezone
+- tripleo_packages
+- contrail_analytics
+- contrail_analytics_alarm
+- contrail_analytics_database
+- contrail_analytics_snmp
+- contrail_config
+- contrail_database
+- contrail_control
+- contrail_webui
+- tripleo_firewall
+tripleo_kernel_extra_modules: {}
+tripleo_kernel_extra_packages: {}
+tripleo_kernel_sysctl_extra_settings:
+  fs.inotify.max_user_instances:
+    value: 1024
+  kernel.pid_max:
+    value: 1048576
+  net.bridge.bridge-nf-call-arptables:
+    value: 1
+  net.bridge.bridge-nf-call-ip6tables:
+    value: 1
+  net.bridge.bridge-nf-call-iptables:
+    value: 1
+  net.ipv4.ip_forward:
+    value: 1
+  net.ipv4.ip_local_reserved_ports:
+    value: 35357,49000-49001
+  net.ipv4.ip_nonlocal_bind:
+    value: 1
+  net.ipv4.neigh.default.gc_thresh1:
+    value: 1024
+  net.ipv4.neigh.default.gc_thresh2:
+    value: 2048
+  net.ipv4.neigh.default.gc_thresh3:
+    value: 4096
+  net.ipv6.conf.all.disable_ipv6:
+    value: 0
+  net.ipv6.conf.default.disable_ipv6:
+    value: 0
+  net.ipv6.conf.lo.disable_ipv6:
+    value: 0
+  net.ipv6.ip_nonlocal_bind:
+    value: 1
+tripleo_stack_name: overcloud

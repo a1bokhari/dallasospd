@@ -1,0 +1,61 @@
+haproxy:
+  tripleo.contrail_analytics.haproxy_endpoints:
+    contrail_analytics:
+      internal_ip: 10.2.120.4
+      listen_options:
+        http-request:
+        - set-header X-Forwarded-Proto https if { ssl_fc }
+        - set-header X-Forwarded-Proto http if !{ ssl_fc }
+        option:
+        - httpchk GET /
+        - httplog
+        - forwardfor
+      member_options:
+      - check
+      - inter 2000
+      - rise 2
+      - fall 5
+      mode: http
+      public_ssl_port: 18081
+      public_virtual_ip: '%{hiera(''public_virtual_ip'')}'
+      service_network: internal_api
+      service_port: 8081
+  tripleo.contrail_config.haproxy_endpoints:
+    contrail_config:
+      internal_ip: 10.2.120.4
+      listen_options:
+        http-request:
+        - set-header X-Forwarded-Proto https if { ssl_fc }
+        - set-header X-Forwarded-Proto http if !{ ssl_fc }
+        option:
+        - httpchk GET /
+        - httplog
+        - forwardfor
+      member_options:
+      - check
+      - inter 2000
+      - rise 2
+      - fall 5
+      mode: http
+      public_ssl_port: 18082
+      public_virtual_ip: '%{hiera(''public_virtual_ip'')}'
+      service_network: internal_api
+      service_port: 8082
+  tripleo.contrail_webui.haproxy_endpoints:
+    contrail_webui:
+      internal_ip: 10.2.120.4
+      listen_options:
+        balance:
+        - source
+        hash-type:
+        - consistent
+      member_options:
+      - check
+      - inter 2000
+      - rise 2
+      - fall 5
+      mode: tcp
+      public_ssl_port: 8143
+      public_virtual_ip: '%{hiera(''public_virtual_ip'')}'
+      service_network: internal_api
+      service_port: 8143

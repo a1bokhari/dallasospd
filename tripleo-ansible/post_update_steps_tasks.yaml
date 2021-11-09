@@ -1,0 +1,24 @@
+- include_tasks: Controller/post_update_tasks.yaml
+  when: tripleo_role_name == 'Controller'
+  tags:
+    - always
+- include_tasks: Compute/post_update_tasks.yaml
+  when: tripleo_role_name == 'Compute'
+  tags:
+    - always
+- include_tasks: ContrailController/post_update_tasks.yaml
+  when: tripleo_role_name == 'ContrailController'
+  tags:
+    - always
+- include_tasks: ContrailSriov/post_update_tasks.yaml
+  when: tripleo_role_name == 'ContrailSriov'
+  tags:
+    - always
+- include_tasks: ContrailDpdk/post_update_tasks.yaml
+  when: tripleo_role_name == 'ContrailDpdk'
+  tags:
+    - always
+- include_tasks: ComputeNFV/post_update_tasks.yaml
+  when: tripleo_role_name == 'ComputeNFV'
+  tags:
+    - always

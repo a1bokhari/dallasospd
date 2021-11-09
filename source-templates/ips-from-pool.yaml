@@ -1,0 +1,63 @@
+# Environment file for pre-assigned IPs
+resource_registry:
+  OS::TripleO::ComputeNFV::Ports::ExternalPort: ./network/ports/external_from_pool.yaml
+  OS::TripleO::ComputeNFV::Ports::InternalApiPort: ./network/ports/internal_api_from_pool.yaml
+  OS::TripleO::ComputeNFV::Ports::StoragePort: ./network/ports/storage_from_pool.yaml
+  OS::TripleO::ComputeNFV::Ports::StorageMgmtPort: ./network/ports/storage_mgmt_from_pool.yaml
+  OS::TripleO::ComputeNFV::Ports::TenantPort: ./network/ports/tenant_from_pool.yaml
+  OS::TripleO::ContrailController::Ports::ExternalPort: ./network/ports/external_from_pool.yaml
+  OS::TripleO::ContrailController::Ports::InternalApiPort: ./network/ports/internal_api_from_pool.yaml
+  OS::TripleO::ContrailController::Ports::TenantPort: ./network/ports/tenant_from_pool.yaml
+  OS::TripleO::ControlPlane::Ports::ExternalPort: ./network/ports/external_from_pool.yaml
+  OS::TripleO::ControlPlane::Ports::InternalApiPort: ./network/ports/internal_api_from_pool.yaml
+  OS::TripleO::ControlPlane::Ports::StoragePort: ./network/ports/storage_from_pool.yaml
+  OS::TripleO::ControlPlane::Ports::StorageMgmtPort: ./network/ports/storage_mgmt_from_pool.yaml
+  OS::TripleO::ControlPlane::Ports::TenantPort: ./network/ports/tenant_from_pool.yaml
+  OS::TripleO::Controller::Ports::ExternalPort: ./network/ports/external_from_pool.yaml
+  OS::TripleO::Controller::Ports::InternalApiPort: ./network/ports/internal_api_from_pool.yaml
+  OS::TripleO::Controller::Ports::StoragePort: ./network/ports/storage_from_pool.yaml
+  OS::TripleO::Controller::Ports::StorageMgmtPort: ./network/ports/storage_mgmt_from_pool.yaml
+
+parameter_defaults:
+  ComputeNFVIPs:
+    external:
+    - 172.31.255.138
+    internal_api:
+    - 10.2.120.12
+    storage:
+    - 10.3.130.8
+    storage_mgmt:
+    - 10.4.140.8
+    tenant:
+    - 10.1.110.8
+  ContrailControllerIPs:
+    external:
+    - 172.31.255.131
+    - 172.31.255.132
+    - 172.31.255.133
+    internal_api:
+    - 10.2.120.5
+    - 10.2.120.6
+    - 10.2.120.7
+    tenant:
+    - 10.1.110.5
+    - 10.1.110.6
+    - 10.1.110.7
+  ControllerIPs:
+    external:
+    - 172.31.255.135
+    - 172.31.255.136
+    - 172.31.255.137
+    internal_api:
+    - 10.2.120.9
+    - 10.2.120.10
+    - 10.2.120.11
+    storage:
+    - 10.3.130.5
+    - 10.3.130.6
+    - 10.3.130.7
+    storage_mgmt:
+    - 10.4.140.5
+    - 10.4.140.6
+    - 10.4.140.7
+

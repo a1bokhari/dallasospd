@@ -1,0 +1,1423 @@
+step_3:
+  contrail_analytics_zookeeper:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_kafka.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-external-zookeeper:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_kafka/:/var/lib/config-data/contrail_analytics_kafka/:ro
+    - /var/lib/contrail/analytics_zookeeper:/data:z
+    - /var/log/containers/contrail/kafka-zookeeper:/var/log/zookeeper:z
+  contrail_config_rabbitmq:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config_database.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+      RABBITMQ_CTL_DIST_PORT_MAX: 25694
+      RABBITMQ_CTL_DIST_PORT_MIN: 25684
+      RABBITMQ_LOGS: /var/log/rabbitmq/rabbitmq.log
+      RABBITMQ_SASL_LOGS: /var/log/rabbitmq/rabbitmq_sasl.log
+    image: hub.juniper.net/contrail-nightly/contrail-external-rabbitmq:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config_database/:/var/lib/config-data/contrail_config_database/:ro
+    - /var/log/containers/contrail/rabbitmq:/var/log/rabbitmq
+  contrail_config_zookeeper:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config_database.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-external-zookeeper:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config_database/:/var/lib/config-data/contrail_config_database/:ro
+    - /var/lib/contrail/config_zookeeper:/data:z
+    - /var/log/containers/contrail/zookeeper:/var/log/zookeeper:z
+step_4:
+  contrail_analytics_database:
+    cap_add:
+    - SYS_NICE
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_database.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-external-cassandra:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    security_opt:
+    - seccomp=unconfined
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_database/:/var/lib/config-data/contrail_analytics_database/:ro
+    - /var/lib/contrail/analytics_cassandra_data:/var/lib/cassandra/data:z
+    - /var/lib/contrail/analytics_cassandra_commitlog:/var/lib/cassandra/commitlog:z
+    - /var/log/containers/contrail/database:/var/log/cassandra:z
+  contrail_analytics_kafka:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_kafka.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-external-kafka:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_kafka/:/var/lib/config-data/contrail_analytics_kafka/:ro
+    - /var/log/containers/contrail/kafka:/var/log/kafka:z
+  contrail_config_database:
+    cap_add:
+    - SYS_NICE
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config_database.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-external-cassandra:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    security_opt:
+    - seccomp=unconfined
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config_database/:/var/lib/config-data/contrail_config_database/:ro
+    - /var/lib/contrail/config_cassandra:/var/lib/cassandra:z
+    - /var/log/containers/contrail/config-database:/var/log/cassandra:z
+  contrail_config_database_nodemgr:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config_database.env
+    environment:
+      AUTH_MODE: keystone
+      CONFIG_DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: '100'
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-nodemgr:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config_database/:/var/lib/config-data/contrail_config_database/:ro
+    - /var/run:/var/run
+    - /run/runc:/run/runc
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /var/lib/containers:/var/lib/containers:shared
+    - /etc/containers:/etc/containers:ro
+    - /usr/share/containers:/usr/share/containers:ro
+  contrail_config_database_provisioner:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config_database.env
+    environment:
+      APPLY_DEFAULTS: 'True'
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-provisioner:21.3.27-ubi
+    net: host
+    restart: on-failure
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config_database/:/var/lib/config-data/contrail_config_database/:ro
+  contrail_redis:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-external-redis:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics/:/var/lib/config-data/contrail_analytics/:ro
+    - /var/lib/config-data/contrail_webui/:/var/lib/config-data/contrail_webui/:ro
+  logrotate_crond:
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /usr/share/openstack-tripleo-common/healthcheck/cron
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-cron:16.2
+    net: none
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/kolla/config_files/logrotate-crond.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/config-data/puppet-generated/crond:/var/lib/kolla/config_files/src:ro
+    - /var/log/containers:/var/log/containers:z
+step_5:
+  collectd:
+    cap_add:
+    - IPC_LOCK
+    environment:
+      KOLLA_CONFIG_STRATEGY: COPY_ALWAYS
+    healthcheck:
+      test: /openstack/healthcheck
+    image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-collectd:16.2
+    net: host
+    pid: host
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /var/lib/kolla/config_files/collectd.json:/var/lib/kolla/config_files/config.json:ro
+    - /var/lib/containers/storage/overlay-containers:/var/lib/containers/storage/overlay-containers:ro
+    - /var/lib/config-data/puppet-generated/collectd:/var/lib/kolla/config_files/src:ro
+    - /var/log/containers/collectd:/var/log/collectd:rw,z
+    - /var/run/:/var/run:rw
+    - /var/lib/container-config-scripts:/scripts:ro
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+  contrail_analytics_alarm_nodemgr:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_alarm.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-nodemgr:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_alarm/:/var/lib/config-data/contrail_analytics_alarm/:ro
+    - /var/run:/var/run
+    - /run/runc:/run/runc
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /var/lib/containers:/var/lib/containers:shared
+    - /etc/containers:/etc/containers:ro
+    - /usr/share/containers:/usr/share/containers:ro
+  contrail_analytics_alarm_provisioner:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_alarm.env
+    environment:
+      APPLY_DEFAULTS: 'True'
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-provisioner:21.3.27-ubi
+    net: host
+    restart: on-failure
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_alarm/:/var/lib/config-data/contrail_analytics_alarm/:ro
+  contrail_analytics_alarmgen:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_alarm.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-analytics-alarm-gen:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_alarm/:/var/lib/config-data/contrail_analytics_alarm/:ro
+  contrail_analytics_api:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-analytics-api:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics/:/var/lib/config-data/contrail_analytics/:ro
+  contrail_analytics_collector:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-analytics-collector:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics/:/var/lib/config-data/contrail_analytics/:ro
+  contrail_analytics_database_nodemgr:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_database.env
+    environment:
+      AUTH_MODE: keystone
+      DATABASE_NODEMGR__DEFAULTS__minimum_diskGB: '100'
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-nodemgr:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_database/:/var/lib/config-data/contrail_analytics_database/:ro
+    - /var/run:/var/run
+    - /run/runc:/run/runc
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /var/lib/containers:/var/lib/containers:shared
+    - /etc/containers:/etc/containers:ro
+    - /usr/share/containers:/usr/share/containers:ro
+  contrail_analytics_database_provisioner:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_database.env
+    environment:
+      APPLY_DEFAULTS: 'True'
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-provisioner:21.3.27-ubi
+    net: host
+    restart: on-failure
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_database/:/var/lib/config-data/contrail_analytics_database/:ro
+  contrail_analytics_nodemgr:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-nodemgr:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics/:/var/lib/config-data/contrail_analytics/:ro
+    - /var/run:/var/run
+    - /run/runc:/run/runc
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /var/lib/containers:/var/lib/containers:shared
+    - /etc/containers:/etc/containers:ro
+    - /usr/share/containers:/usr/share/containers:ro
+  contrail_analytics_provisioner:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics.env
+    environment:
+      APPLY_DEFAULTS: 'True'
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-provisioner:21.3.27-ubi
+    net: host
+    restart: on-failure
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics/:/var/lib/config-data/contrail_analytics/:ro
+  contrail_analytics_queryengine:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_query_engine.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-analytics-query-engine:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_query_engine/:/var/lib/config-data/contrail_analytics_query_engine/:ro
+  contrail_analytics_snmp_collector:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_snmp.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-analytics-snmp-collector:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_snmp/:/var/lib/config-data/contrail_analytics_snmp/:ro
+  contrail_analytics_snmp_nodemgr:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_snmp.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-nodemgr:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_snmp/:/var/lib/config-data/contrail_analytics_snmp/:ro
+    - /var/run:/var/run
+    - /run/runc:/run/runc
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /var/lib/containers:/var/lib/containers:shared
+    - /etc/containers:/etc/containers:ro
+    - /usr/share/containers:/usr/share/containers:ro
+  contrail_analytics_snmp_provisioner:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_snmp.env
+    environment:
+      APPLY_DEFAULTS: 'True'
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-provisioner:21.3.27-ubi
+    net: host
+    restart: on-failure
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_snmp/:/var/lib/config-data/contrail_analytics_snmp/:ro
+  contrail_analytics_topology:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_analytics_snmp.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-analytics-snmp-topology:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_analytics_snmp/:/var/lib/config-data/contrail_analytics_snmp/:ro
+  contrail_config_api:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-config-api:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config/:/var/lib/config-data/contrail_config/:ro
+  contrail_config_device_manager:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-config-devicemgr:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config/:/var/lib/config-data/contrail_config/:ro
+  contrail_config_nodemgr:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-nodemgr:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config/:/var/lib/config-data/contrail_config/:ro
+    - /var/run:/var/run
+    - /run/runc:/run/runc
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /var/lib/containers:/var/lib/containers:shared
+    - /etc/containers:/etc/containers:ro
+    - /usr/share/containers:/usr/share/containers:ro
+  contrail_config_provisioner:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config.env
+    environment:
+      APPLY_DEFAULTS: 'True'
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-provisioner:21.3.27-ubi
+    net: host
+    restart: on-failure
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config/:/var/lib/config-data/contrail_config/:ro
+  contrail_config_schema:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-config-schema:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config/:/var/lib/config-data/contrail_config/:ro
+  contrail_config_svc_monitor:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_config.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-config-svcmonitor:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_config/:/var/lib/config-data/contrail_config/:ro
+  contrail_control_control:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_control.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-control-control:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_control/:/var/lib/config-data/contrail_control/:ro
+  contrail_control_dns:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_control.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-control-dns:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_control/:/var/lib/config-data/contrail_control/:ro
+    - /var/lib/contrail/contrail_control_dns:/etc/contrail/dns:z
+  contrail_control_named:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_control.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-control-named:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes_from:
+    - contrail_control_dns
+  contrail_control_nodemgr:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_control.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-nodemgr:21.3.27-ubi
+    net: host
+    pid: host
+    privileged: true
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_control/:/var/lib/config-data/contrail_control/:ro
+    - /var/run:/var/run
+    - /run/runc:/run/runc
+    - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    - /sys/fs/selinux:/sys/fs/selinux
+    - /var/lib/containers:/var/lib/containers:shared
+    - /etc/containers:/etc/containers:ro
+    - /usr/share/containers:/usr/share/containers:ro
+  contrail_control_provisioner:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_control.env
+    environment:
+      APPLY_DEFAULTS: 'True'
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '35357'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.62.62.100
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-provisioner:21.3.27-ubi
+    net: host
+    restart: on-failure
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_control/:/var/lib/config-data/contrail_control/:ro
+  contrail_webui_job:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_webui.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '5000'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.2.120.4
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-webui-job:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_webui/:/var/lib/config-data/contrail_webui/:ro
+  contrail_webui_web:
+    detach: true
+    env_file:
+    - /etc/contrail/common_contrail.env
+    - /etc/contrail/common_webui.env
+    environment:
+      AUTH_MODE: keystone
+      KEYSTONE_AUTH_ADMIN_PASSWORD: hcw8m54r92mms97hbhj27l2vc
+      KEYSTONE_AUTH_ADMIN_PORT: '5000'
+      KEYSTONE_AUTH_ADMIN_TENANT: admin
+      KEYSTONE_AUTH_ADMIN_USER: admin
+      KEYSTONE_AUTH_HOST: 10.2.120.4
+      KEYSTONE_AUTH_PROJECT_DOMAIN_NAME: Default
+      KEYSTONE_AUTH_PROTO: http
+      KEYSTONE_AUTH_REGION_NAME: regionOne
+      KEYSTONE_AUTH_URL_VERSION: /v3
+      KEYSTONE_AUTH_USER_DOMAIN_NAME: Default
+    image: hub.juniper.net/contrail-nightly/contrail-controller-webui-web:21.3.27-ubi
+    net: host
+    privileged: false
+    restart: always
+    user: root
+    volumes:
+    - /etc/hosts:/etc/hosts:ro
+    - /etc/localtime:/etc/localtime:ro
+    - /etc/pki/ca-trust/extracted:/etc/pki/ca-trust/extracted:ro
+    - /etc/pki/ca-trust/source/anchors:/etc/pki/ca-trust/source/anchors:ro
+    - /etc/pki/tls/certs/ca-bundle.crt:/etc/pki/tls/certs/ca-bundle.crt:ro
+    - /etc/pki/tls/certs/ca-bundle.trust.crt:/etc/pki/tls/certs/ca-bundle.trust.crt:ro
+    - /etc/pki/tls/cert.pem:/etc/pki/tls/cert.pem:ro
+    - /dev/log:/dev/log
+    - /etc/puppet:/etc/puppet:ro
+    - /etc/contrail/ssl:/etc/contrail/ssl:z
+    - /var/crashes:/var/crashes:z
+    - /var/log/containers/contrail:/var/log/contrail:z
+    - /var/lib/config-data/contrail_webui/:/var/lib/config-data/contrail_webui/:ro

@@ -1,0 +1,175 @@
+- import_role:
+    name: tripleo-container-tag
+  name: Cinder Volume tag container image for pacemaker
+  vars:
+    container_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-cinder-volume:16.2
+    container_image_latest: cluster.common.tag/default-dev-osp16-2-osp16_containers-cinder-volume:pcmklatest
+  when: step|int == 1
+- name: set enable_sensubility fact
+  set_fact:
+    enable_sensubility: true
+- block:
+  - failed_when: rsyslog_config.rc == 2
+    name: Check if rsyslog exists
+    register: rsyslog_config
+    shell: systemctl list-unit-files --type=service | grep -q rsyslog
+  - block:
+    - copy:
+        content: 'if $programname startswith ''healthcheck_'' then -/var/log/containers/collectd/healthchecks.log
+
+          & stop
+
+          '
+        dest: /etc/rsyslog.d/openstack-healthcheck.conf
+      name: Log healthchecks in dedicated file
+      register: logconfig_add
+      when:
+      - enable_sensubility|bool
+    - file:
+        path: /etc/rsyslog.d/openstack-healthcheck.conf
+        state: absent
+      name: Remove healthcheck log
+      register: logconfig_rm
+      when:
+      - not enable_sensubility|bool
+    - name: Reload rsyslogd if needed
+      service:
+        name: rsyslog
+        state: restarted
+      when: logconfig_add is changed or logconfig_rm is changed
+    name: Configure if we can
+    when:
+    - rsyslog_config is changed
+    - rsyslog_config.rc == 0
+  name: Configure rsyslog for container healthchecks
+  when:
+  - step|int == 1
+- block:
+  - name: Check if rsyslog exists
+    register: rsyslog_config
+    shell: systemctl is-active rsyslog
+  - block:
+    - blockinfile:
+        content: 'if $syslogfacility-text == ''{{facility}}'' and $programname ==
+          ''haproxy'' then -/var/log/containers/haproxy/haproxy.log
+
+          & stop
+
+          '
+        create: true
+        path: /etc/rsyslog.d/openstack-haproxy.conf
+      name: Forward logging to haproxy.log file
+      register: logconfig
+      vars:
+        facility: local0
+    - name: restart rsyslog service after logging conf change
+      service:
+        name: rsyslog
+        state: restarted
+      when: logconfig is changed
+    when:
+    - rsyslog_config is changed
+    - rsyslog_config.rc == 0
+  name: Configure rsyslog for HAproxy container managed by Pacemaker
+  when: step|int == 1
+- import_role:
+    name: tripleo-container-tag
+  name: HAproxy tag container image for pacemaker
+  vars:
+    container_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-haproxy:16.2
+    container_image_latest: cluster.common.tag/default-dev-osp16-2-osp16_containers-haproxy:pcmklatest
+  when: step|int == 1
+- include_role:
+    name: tripleo_lvmfilter
+  name: Run lvmfilter role
+  when:
+  - step|int == 1
+- import_role:
+    name: tripleo-container-tag
+  name: MySQL tag container image for pacemaker
+  vars:
+    container_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-mariadb:16.2
+    container_image_latest: cluster.common.tag/default-dev-osp16-2-osp16_containers-mariadb:pcmklatest
+  when: step|int == 1
+- import_role:
+    name: tripleo-container-tag
+  name: RabbitMQ tag container image for pacemaker
+  vars:
+    container_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-rabbitmq:16.2
+    container_image_latest: cluster.common.tag/default-dev-osp16-2-osp16_containers-rabbitmq:pcmklatest
+  when: step|int == 1
+- block:
+  - become: true
+    delay: 5
+    loop: '{{ lookup(''file'', tripleo_role_name + ''/docker_config.yaml'', errors=''ignore'')
+      | default(''{}'', True) | from_yaml | recursive_get_key_from_dict(key=''image'')
+      | unique }}'
+    loop_control:
+      loop_var: prefetch_image
+    name: Pre-fetch all the containers
+    podman_image:
+      force: true
+      name: '{{ prefetch_image }}'
+      validate_certs: false
+    retries: 5
+  when:
+  - (step|int) == 1
+- import_role:
+    name: tripleo-container-tag
+  name: Redis tag container image for pacemaker
+  vars:
+    container_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-redis:16.2
+    container_image_latest: cluster.common.tag/default-dev-osp16-2-osp16_containers-redis:pcmklatest
+  when: step|int == 1
+- block:
+  - failed_when: rsyslog_config.rc == 2
+    name: Check if rsyslog exists
+    register: rsyslog_config
+    shell: systemctl list-unit-files --type=service | grep -q rsyslog
+  - block:
+    - copy:
+        content: '# Fix for https://bugs.launchpad.net/tripleo/+bug/1776180
+
+          local2.*                 /var/log/containers/swift/swift.log
+
+          &                        stop
+
+          '
+        dest: /etc/rsyslog.d/openstack-swift.conf
+      name: Forward logging to swift.log file
+      register: logconfig
+    - name: Restart rsyslogd service after logging conf change
+      service: name=rsyslog state=restarted
+      when:
+      - logconfig is changed
+    when:
+    - rsyslog_config is changed
+    - rsyslog_config.rc == 0
+  name: Configure rsyslog for swift-proxy
+  when: step|int == 1
+- block:
+  - failed_when: rsyslog_config.rc == 2
+    name: Check if rsyslog exists
+    register: rsyslog_config
+    shell: systemctl list-unit-files --type=service | grep -q rsyslog
+  - block:
+    - copy:
+        content: '# Fix for https://bugs.launchpad.net/tripleo/+bug/1776180
+
+          local2.*                 /var/log/containers/swift/swift.log
+
+          &                        stop
+
+          '
+        dest: /etc/rsyslog.d/openstack-swift.conf
+      name: Forward logging to swift.log file
+      register: logconfig
+    - name: Restart rsyslogd service after logging conf change
+      service: name=rsyslog state=restarted
+      when:
+      - logconfig is changed
+    when:
+    - rsyslog_config is changed
+    - rsyslog_config.rc == 0
+  name: Configure rsyslog for swift-storage
+  when: step|int == 1

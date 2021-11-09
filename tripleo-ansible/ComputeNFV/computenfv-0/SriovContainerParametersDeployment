@@ -1,0 +1,263 @@
+SriovContainerParametersDeployment:
+  config: |
+    ---
+    - name: Call Contrail init container for compute/dpdk/tls nodes
+      connection: local
+      hosts: localhost
+      tasks:
+
+        - name: set container_cli if undefined
+          set_fact:
+            container_cli: "podman"
+          when: container_cli is not defined
+
+        - name: contrail settings
+          set_fact:
+            contrail_settings_env_vars: "{{ _CONTRAIL_SETTINGS_ | default({}) }}"
+
+        - name: update contrail settings if nodedata is provided
+          block:
+          - name: get system dmi code
+            shell: |
+              #!/bin/sh
+              dmidecode --s system-uuid | awk 'match($0, /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/) { print substr($0, RSTART, RLENGTH) }'
+            register: dmi
+
+          - name: set dmi fact
+            set_fact:
+              dmi_uuid: "{{ dmi.stdout }}"
+
+          - name: set nodedata
+            set_fact:
+              nodedata: "{{ _NODEDATA_[dmi_uuid] }}"
+            when: _NODEDATA_[dmi_uuid] is defined
+
+          - name: update contrail settings with node data values
+            set_fact:
+              contrail_settings_env_vars: "{{ contrail_settings_env_vars | combine({item.key: item.value}) }}"
+            with_dict: "{{ nodedata['contrail_settings'] }}"
+            when:
+              - nodedata is defined
+              - nodedata['contrail_settings'] is defined
+
+          when: _NODEDATA_ is defined
+
+        - name: create /var/lib/contrail
+          file:
+            path: "/var/lib/contrail"
+            state: directory
+
+        - name: prepare /etc/modprobe.d/vrouter.conf
+          lineinfile:
+            dest: /etc/modprobe.d/vrouter.conf
+            regexp: "^options vrouter"
+            line: "options vrouter {{ _CONTRAIL_VROUTER_MODULE_OPTS_ }}"
+            create: yes
+          when: _CONTRAIL_VROUTER_MODULE_OPTS_ is defined and _CONTRAIL_VROUTER_MODULE_OPTS_ != ''
+
+        - name: contrail vrouter plugin init container if exists
+          block:
+            - name: contrail vrouter plugin registry
+              set_fact:
+                contrail_registry: "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_.split('/')[0] }}"
+
+            - name: Setup podman insecure registry for contrail vrouter plugin
+              when:
+                - contrail_registry != ""
+                - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
+              ini_file:
+                path: /etc/containers/registries.conf
+                section: 'registries.insecure'
+                option: 'registries'
+                value: "[ '{{ contrail_registry }}' ]"
+
+            - name: remove contrail vrouter plugin init container if exists
+              shell: >
+                {{ container_cli }} container rm --force"{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}"
+              ignore_errors: yes
+
+            - name: create contrail vrouter plugin init container
+              shell: >
+                {{ container_cli }} run -t --network host --name "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ }}" --privileged -v /lib/modules:/lib/modules -v /usr/src:/usr/src "{{ _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ }}"
+          when:
+            - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_ != ''
+            - _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ is defined and _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_ != ''
+
+        - name: contrail vrouter init registry
+          set_fact:
+            contrail_registry: "{{ _CONTRAIL_VROUTER_INIT_IMAGE_.split('/')[0] }}"
+
+        - name: Setup podman insecure registry for contrail vrouter init
+          when:
+            - contrail_registry != ""
+            - contrail_registry in _DOCKER_INSECURE_REGISTRIES_
+          ini_file:
+            path: /etc/containers/registries.conf
+            section: 'registries.insecure'
+            option: 'registries'
+            value: "[ '{{ contrail_registry }}' ]"
+
+        - name: start contrail dpdk init container
+          block:
+
+            - set_fact:
+                  dpdk_init_env_args: ''
+
+            - name: prepare podman env args
+              set_fact:
+                dpdk_init_env_args: "{{ dpdk_init_env_args }}  -e  {{ item.key}}='{{ item.value }}'"
+              loop: "{{ contrail_settings_env_vars | dict2items}}"
+
+            - name: pull contrail vrouter dpdk agent container
+              shell: >
+                {{ container_cli }} pull "{{ _CONTRAIL_VROUTER_AGENT_DPDK_IMAGE_ }}"
+
+            - name: remove contrail dpdk init container if exists
+              shell: >
+                {{ container_cli }} container rm --force "{{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }}"
+              ignore_errors: yes
+
+            - name: create contrail dpdk init container
+              shell: |
+                {{ container_cli }} run  -t --network host --name {{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }} --privileged \
+                  -v /dev:/dev -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts -v /lib/modules:/lib/modules -v /bin:/host/bin \
+                  -e AGENT_MODE=dpdk -e CONTRAIL_VROUTER_AGENT_DPDK_DOCKER_IMAGE={{ _CONTRAIL_VROUTER_AGENT_DPDK_IMAGE_ }} \
+                  -e CONTRAIL_VROUTER_AGENT_DPDK_CONTAINER_NAME={{ _CONTRAIL_VROUTER_AGENT_DPDK_CONTAINER_NAME_ }} \
+                  -e CONTRAIL_VROUTER_AGENT_CONTAINER_NAME=contrail_vrouter_agent \
+                  -e DPDK_COMMAND_ADDITIONAL_ARGS="{{ _CONTRAIL_DPDK_COMMAND_ADDITIONAL_ARGS_ }}" \
+                  {{ dpdk_init_env_args }} {{ _CONTRAIL_VROUTER_INIT_IMAGE_ }}
+          when: _IS_DPDK_ is defined and _IS_DPDK_ != ''
+
+        - name: start contrail vrouter init container
+          block:
+
+            - set_fact:
+                vrouter_init_env_vars:
+                  CONTRAIL_VROUTER_AGENT_CONTAINER_NAME: contrail_vrouter_agent
+
+            - set_fact:
+                vrouter_init_env_vars: "{{ vrouter_init_env_vars | combine({item.key: item.value}) }}"
+              with_dict: "{{ contrail_settings_env_vars }}"
+              when: contrail_settings_env_vars is defined
+
+            - set_fact:
+                init_env_args: ''
+
+            - name: prepare podman env args
+              set_fact:
+                init_env_args: "{{ init_env_args }}  -e  {{ item.key}}='{{ item.value }}'"
+              loop: "{{ vrouter_init_env_vars | dict2items}}"
+
+            - name: remove contrail init container if exists
+              shell: >
+                {{ container_cli }} container rm --force "{{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }}"
+              ignore_errors: yes
+
+
+            - name: create vrouter init container
+              shell: |
+                {{ container_cli }} run -t --network host --name {{ _CONTRAIL_VROUTER_INIT_IMAGE_NAME_ }} --privileged \
+                  -v /dev:/dev -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts \
+                  -v /lib/modules:/lib/modules -v /bin:/host/bin \
+                  {{ init_env_args }} {{ _CONTRAIL_VROUTER_INIT_IMAGE_ }}
+
+
+          when: _IS_DPDK_ is undefined or _IS_DPDK_ == ''
+
+
+  creation_time: "2021-11-09T23:21:03Z"
+  deployment_name: SriovContainerParametersDeployment
+  group: ansible
+  id: 9be0fac5-e858-4409-81e0-14e4d54b4e96
+  inputs:
+    - name: _NODEDATA_
+      description: 
+      type: Json
+      value: |-
+        {}
+    - name: _CONTRAIL_SETTINGS_
+      description: 
+      type: Json
+      value: |-
+        {'MAX_HEAP_SIZE': '16G', 'HEAP_NEWSIZE': '2G', 'VROUTER_ENCRYPTION': False, 'VROUTER_GATEWAY': '10.1.110.1', 'BGP_ASN': 64520, 'BGP_AUTO_MESH': True, 'DPDK_UIO_DRIVER': 'vfio-pci', 'LACP_RATE': 0, 'SERVICE_CORE_MASK': '0x80000000000008', 'DPDK_CTRL_THREAD_MASK': '0x30000000000003'}
+    - name: _CONTRAIL_VROUTER_INIT_IMAGE_
+      description: 
+      type: String
+      value: |-
+        hub.juniper.net/contrail-nightly/contrail-vrouter-kernel-init-dpdk:21.3.27-ubi
+    - name: _CONTRAIL_VROUTER_INIT_IMAGE_NAME_
+      description: 
+      type: String
+      value: |-
+        contrail-vrouter-kernel-init-dpdk
+    - name: _CONTRAIL_VROUTER_AGENT_DPDK_IMAGE_
+      description: 
+      type: String
+      value: |-
+        hub.juniper.net/contrail-nightly/contrail-vrouter-agent-dpdk:21.3.27-ubi
+    - name: _CONTRAIL_VROUTER_AGENT_DPDK_CONTAINER_NAME_
+      description: 
+      type: String
+      value: |-
+        contrail-vrouter-agent-dpdk
+    - name: _CONTRAIL_VROUTER_MODULE_OPTS_
+      description: 
+      type: String
+      value: |-
+        
+    - name: _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_
+      description: 
+      type: String
+      value: |-
+        
+    - name: _CONTRAIL_VROUTER_PLUGIN_INIT_IMAGE_NAME_
+      description: 
+      type: String
+      value: |-
+        
+    - name: _CONTRAIL_DPDK_COMMAND_ADDITIONAL_ARGS_
+      description: 
+      type: String
+      value: |-
+        
+    - name: _DOCKER_INSECURE_REGISTRIES_
+      description: 
+      type: String
+      value: |-
+        ['satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000']
+    - name: _IS_DPDK_
+      description: 
+      type: String
+      value: |-
+        True
+    - name: deploy_server_id
+      description: ID of the server being deployed to
+      type: String
+      value: |-
+        1d8891ee-818c-42e2-b762-919cd1b29e87
+    - name: deploy_action
+      description: Name of the current action being deployed
+      type: String
+      value: |-
+        CREATE
+    - name: deploy_stack_id
+      description: ID of the stack this deployment belongs to
+      type: String
+      value: |-
+        overcloud-ComputeNFV-vrrd73wgtqe7-0-cbzcjvph5ogm-PreNetworkConfig-muujyfy3cfrf-SriovContainerParametersDeployment-6vv6hhtbpruy/5bd97cde-2267-49f2-94dc-eb04b51bd914
+    - name: deploy_resource_name
+      description: Name of this deployment resource in the stack
+      type: String
+      value: |-
+        TripleOSoftwareDeployment
+    - name: deploy_signal_transport
+      description: How the server should signal to heat with the deployment output values.
+      type: String
+      value: |-
+        NO_SIGNAL
+  name: deployment_resource
+  options: {}
+  outputs:
+    - name: result
+      description: 
+      type: String

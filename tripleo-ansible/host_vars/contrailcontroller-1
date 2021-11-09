@@ -1,0 +1,24 @@
+pre_network_ContrailController:  [] 
+
+pre_deployments_ContrailController: 
+  - ContrailNodeInitDeployment
+
+post_deployments_ContrailController:  [] 
+
+# ansible_host_vars managed by TripleO Heat Templates in puppet/role.role.j2.yaml:
+ctlplane_subnet_cidr: '24'
+external_cidr: '27'
+fqdn_canonical: contrailcontroller-1.vimosp.local
+fqdn_ctlplane: contrailcontroller-1.ctlplane.vimosp.local
+fqdn_external: contrailcontroller-1.external.vimosp.local
+fqdn_internal_api: contrailcontroller-1.internalapi.vimosp.local
+fqdn_tenant: contrailcontroller-1.tenant.vimosp.local
+hostname_resolve_network: internal_api
+internal_api_cidr: '24'
+network_cidrs:
+  External_cidr: '27'
+  InternalApi_cidr: '24'
+  Tenant_cidr: '24'
+ovn_chassis_mac_map: {}
+tenant_cidr: '24'
+

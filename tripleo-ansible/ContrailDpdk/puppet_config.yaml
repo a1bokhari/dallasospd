@@ -1,0 +1,42 @@
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-collectd:16.2
+  config_volume: collectd
+  puppet_tags: collectd_client_config,exec
+  step_config: include ::tripleo::profile::base::metrics::collectd
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-ceilometer-central:16.2
+  config_volume: ceilometer
+  puppet_tags: ceilometer_config
+  step_config: include ::tripleo::profile::base::ceilometer::agent::polling
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-cron:16.2
+  config_volume: crond
+  step_config: include ::tripleo::profile::base::logging::logrotate
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-iscsid:16.2
+  config_volume: iscsid
+  puppet_tags: iscsid_config
+  step_config: 'include ::tripleo::profile::base::iscsid
+
+    '
+  volumes:
+  - /etc/iscsi:/etc/iscsi:z
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-compute:16.2
+  config_volume: nova_libvirt
+  puppet_tags: nova_config,nova_paste_api_ini
+  step_config: '# TODO(emilien): figure how to deal with libvirt profile.
+
+    # We''ll probably treat it like we do with Neutron plugins.
+
+    # Until then, just include it in the default nova-compute role.
+
+    include tripleo::profile::base::nova::compute::libvirt
+
+    '
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-compute:16.2
+  config_volume: nova_libvirt
+  puppet_tags: libvirtd_config,nova_config,file,libvirt_tls_password
+  step_config: 'include tripleo::profile::base::nova::libvirt
+
+    '
+- config_image: satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000/default-dev-osp16-2-osp16_containers-nova-compute:16.2
+  config_volume: nova_libvirt
+  step_config: 'include ::tripleo::profile::base::sshd
+
+    include tripleo::profile::base::nova::migration::target'

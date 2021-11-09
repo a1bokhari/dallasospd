@@ -1,0 +1,33 @@
+- include_role:
+    name: tripleo-podman
+    tasks_from: tripleo_docker_purge.yml
+  name: Purge everything about docker on the host
+  when:
+  - (step | int) == 3
+- include_role:
+    name: tripleo-podman
+    tasks_from: tripleo_docker_stop.yml
+  name: Stop docker
+- include_role:
+    name: tripleo-podman
+    tasks_from: tripleo_podman_purge.yml
+  name: Purge Podman
+  when:
+  - (step | int) == 3
+  - container_cli == 'podman'
+- block:
+  - name: config database zk target folder path
+    set_fact:
+      zk_data_path: /var/lib/contrail/config_zookeeper
+  - name: config database cassandra target folder path
+    set_fact:
+      db_data_path: /var/lib/contrail/config_cassandra
+  - name: remove zk and db migrate flags
+    shell: 'set -x
+
+      rm -f {{ zk_data_path }}.migrated {{ db_data_path }}.migrated
+
+      '
+  name: move config db data from volumes to host folders
+  when:
+  - step|int == 3

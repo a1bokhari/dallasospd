@@ -1,0 +1,69 @@
+- block:
+  - name: Set contrail-vrouter-kernel-init container name (old container)
+    set_fact:
+      vrouter_init_container_name_ansible: contrail-vrouter-kernel-init
+  - name: Set contrail-vrouter-kernel-init container name (new container)
+    set_fact:
+      vrouter_init_container_full_name_ansible: hub.juniper.net/contrail-nightly/contrail-vrouter-kernel-init:21.3.27-ubi
+  - name: Stop vrouter agent service
+    shell: bash -c 'systemctl stop tripleo_contrail_vrouter_agent.service'
+  - name: Remove old contrail-vrouter-kernel-init container
+    shell: '"{{ container_cli }}" rm -f "{{ vrouter_init_container_name_ansible }}"
+
+      '
+  - name: Get loaded vrouter kernel module version
+    register: vrouter_module_version_before_ziu
+    shell: bash -c 'echo /sys/module/vrouter/version $(cat /sys/module/vrouter/version)'
+  - set_fact:
+      vrouter_module_version_before_ziu: '{{ vrouter_module_version_before_ziu.stdout
+        }}'
+  - name: Start new contrail-vrouter-kernel-init container
+    shell: '"{{ container_cli }}" run --privileged --network=host --name "{{ vrouter_init_container_name_ansible
+      }}" -v /etc/sysconfig/network-scripts:/etc/sysconfig/network-scripts -v /lib/modules:/lib/modules
+      -v /bin:/host/bin -v /dev:/dev "{{ vrouter_init_container_full_name_ansible
+      }}"
+
+      '
+  - async: 120
+    ignore_errors: true
+    name: Restart vhost0 interface
+    poll: 5
+    register: reinit_vhost0
+    shell: bash -c 'ifdown vhost0; ifup vhost0; echo /sys/module/vrouter/version $(cat
+      /sys/module/vrouter/version)'
+  - debug: var=reinit_vhost0.stdout
+  name: Contrail vrouter reinit vhost0
+  when: step|int == 0
+- include_role:
+    name: tripleo-redhat-enforce
+  name: Enforce RHOSP rules regarding subscription.
+  vars:
+    skip_rhel_enforcement: 'false'
+  when:
+  - step|int == 0
+  - ansible_facts['distribution'] == 'RedHat'
+  - not (skip_rhel_enforcement | bool)
+- dnf:
+    name: '@{{ item.module }}:{{ item.stream }}/{{ item.profile|default(''common'')
+      }}'
+    state: present
+  loop: '{{ dnf_module_list|list }}'
+  name: Ensure DNF modules have the right stream
+  vars:
+    dnf_module_list: []
+  when:
+  - step|int == 0
+  - ansible_facts['distribution_major_version'] is version('8', '>=')
+  - dnf_module_list|length > 0
+- name: Check for existing yum.pid
+  register: yum_pid_file
+  stat: path=/var/run/yum.pid
+  when: step|int == 0 or step|int == 3
+- fail: msg="ERROR existing yum.pid detected - can't continue! Please ensure there
+    is no other package update process for the duration of the minor update worfklow.
+    Exiting."
+  name: Exit if existing yum process
+  when: (step|int == 0 or step|int == 3) and yum_pid_file.stat.exists
+- name: Set boolean skip_package_update
+  set_fact:
+    skip_package_update: false

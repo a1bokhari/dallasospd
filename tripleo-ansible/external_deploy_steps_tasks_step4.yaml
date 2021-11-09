@@ -1,0 +1,63 @@
+- become: true
+  name: Clean up legacy Cinder keystone catalog entries
+  os_keystone_service:
+    cloud: overcloud
+    name: cinderv3
+    service_type: volume
+    state: absent
+  when:
+  - step|int == 4
+- become: true
+  block:
+  - include_role:
+      name: tripleo-keystone-resources
+    name: Manage Keystone resources for OpenStack services
+    vars:
+      tripleo_keystone_resources_admin_endpoint: http://10.62.62.100:35357
+      tripleo_keystone_resources_admin_password: hcw8m54r92mms97hbhj27l2vc
+      tripleo_keystone_resources_catalog_config: '{{ keystone_resources }}'
+      tripleo_keystone_resources_cloud_name: overcloud
+      tripleo_keystone_resources_internal_endpoint: http://10.2.120.4:5000
+      tripleo_keystone_resources_member_role_enabled: false
+      tripleo_keystone_resources_public_endpoint: http://172.31.255.130:5000
+      tripleo_keystone_resources_region: regionOne
+      tripleo_keystone_resources_service_project: service
+  - name: is Keystone LDAP enabled
+    set_fact:
+      keystone_ldap_domain_enabled: true
+  - name: Set fact for tripleo_keystone_ldap_domains
+    set_fact:
+      tripleo_keystone_ldap_domains:
+        unica:
+          group_desc_attribute: description
+          group_id_attribute: cn
+          group_member_attribute: member
+          group_name_attribute: cn
+          group_objectclass: groupOfNames
+          group_tree_dn: cn=groups,cn=accounts,dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc
+          password: svc-ldap
+          suffix: dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc
+          url: ldap://idmvim.tmeprj2.comm.red.ibm.gsc
+          user: uid=svc-ldap,cn=users,cn=accounts,dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc
+          user_allow_create: false
+          user_allow_delete: false
+          user_allow_update: false
+          user_filter: (memberOf=cn=grp-openstack,cn=groups,cn=accounts,dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc)
+          user_id_attribute: uid
+          user_objectclass: inetUser
+          user_tree_dn: cn=users,cn=accounts,dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc
+    when: keystone_ldap_domain_enabled|bool
+  - include_role:
+      name: tripleo-keystone-resources
+      tasks_from: domains
+    name: Manage Keystone domains from LDAP config
+    vars:
+      batched_tripleo_keystone_resources_domains: '{{ tripleo_keystone_ldap_domains
+        | list }}'
+      tripleo_keystone_resources_catalog_config: '{{ keystone_resources }}'
+      tripleo_keystone_resources_cloud_name: overcloud
+    when: keystone_ldap_domain_enabled|bool
+  name: Manage Keystone resources
+  when:
+  - step|int == 4
+  - not ansible_check_mode|bool

@@ -1,0 +1,55 @@
+- block:
+  - name: root leapp installation folder
+    set_fact:
+      leapp_folder: /var/lib/leapp/el8userspace
+  - name: Set contrail-vrouter-kernel-init container name
+    set_fact:
+      vrouter_init_image: hub.juniper.net/contrail-nightly/contrail-vrouter-kernel-init:21.3.27-ubi
+  - name: Start contrail-vrouter-kernel-init container for system_upgrade
+    shell: "set -eux\ncontainer_cli={{ container_cli }}\nif type docker &> /dev/null\
+      \ ; then\n    container_cli=\"docker\"\nfi\nkver=$(ls {{ leapp_folder }}/lib/modules/\
+      \ | sort -V | tail -n 1)\nmkdir -p /lib/modules/${kver}/kernel/net/vrouter\n\
+      touch /lib/modules/${kver}/modules.builtin\ntouch /lib/modules/${kver}/modules.order\n\
+      touch /lib/modules/${kver}/modules.dep\n$container_cli rm --force contrail-vrouter-kernel-init-leapp\
+      \ || true\n$container_cli run -t --network host --privileged \\\n  -v /dev:/dev\
+      \ \\\n  -v /bin:/host/bin \\\n  -v /lib/modules:/lib/modules \\\n  --name contrail-vrouter-kernel-init-leapp\
+      \ \\\n  {{ vrouter_init_image }}\n"
+  name: leapp upgrade prepare vrouter driver
+  tags:
+  - never
+  - system_upgrade_prepare
+  when:
+  - step|int == 5
+  - upgrade_leapp_enabled
+- name: Gather missing facts
+  setup:
+    gather_subset: distribution
+  tags:
+  - never
+  - nova_hybrid_state
+  when: ansible_facts['distribution'] is not defined or ansible_facts['distribution_major_version']
+    is not defined
+- name: Gather missing facts
+  setup:
+    gather_subset: distribution
+  tags:
+  - always
+  when: ansible_facts['distribution'] is not defined or ansible_facts['distribution_major_version']
+    is not defined
+- name: Set leapp facts
+  set_fact:
+    upgrade_leapp_command_options: ''
+    upgrade_leapp_debug: true
+    upgrade_leapp_devel_skip: ''
+    upgrade_leapp_enabled: "{{ _upgradeLeappEnabled | bool and\n   ansible_facts['distribution']\
+      \ == 'RedHat' and\n   ansible_facts['distribution_major_version'] is version('7',\
+      \ '==') }}"
+    upgrade_leapp_post_reboot_delay: 120
+    upgrade_leapp_reboot_timeout: 3600
+  tags:
+  - always
+  vars:
+    _upgradeLeappEnabled: false
+- name: Set boolean skip_package_update
+  set_fact:
+    skip_package_update: false

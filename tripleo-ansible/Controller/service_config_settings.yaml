@@ -1,0 +1,151 @@
+collectd:
+  collectd::plugin::memcached::instances:
+    local:
+      host: '%{hiera(''memcached::listen_ip_uri'')}'
+      port:
+      - 11211
+  tripleo.collectd.plugins.memcached:
+  - memcached
+horizon:
+  horizon::keystone_default_domain: Default
+  horizon::keystone_multidomain_support: true
+keystone:
+  tripleo::profile::base::keystone::ceilometer_notification_topics:
+  - notifications
+map_merge:
+- null
+- rsyslog:
+    tripleo_logging_sources_cinder_api:
+    - file: /var/log/containers/cinder/cinder-api.log
+      tag: openstack.cinder.api
+- rsyslog:
+    tripleo_logging_sources_placement:
+    - file: /var/log/containers/httpd/placement_wsgi_error_ssl.log
+      tag: openstack.placement
+mysql:
+  cinder::db::mysql::allowed_hosts:
+  - '%'
+  - '%{hiera(''mysql_bind_host'')}'
+  cinder::db::mysql::dbname: cinder
+  cinder::db::mysql::host: 10.2.120.4
+  cinder::db::mysql::password: mwlrs6bw45f6bbmzq9lb2p776
+  cinder::db::mysql::user: cinder
+  glance::db::mysql::allowed_hosts:
+  - '%'
+  - '%{hiera(''mysql_bind_host'')}'
+  glance::db::mysql::dbname: glance
+  glance::db::mysql::host: 10.2.120.4
+  glance::db::mysql::password: tdhxg4wpgp56mhb4d5bfs2jgb
+  glance::db::mysql::user: glance
+  heat::db::mysql::allowed_hosts:
+  - '%'
+  - '%{hiera(''mysql_bind_host'')}'
+  heat::db::mysql::dbname: heat
+  heat::db::mysql::host: 10.2.120.4
+  heat::db::mysql::password: gc56chrwwv6c4tmqwwbcgc5f2
+  heat::db::mysql::user: heat
+  keystone::db::mysql::allowed_hosts:
+  - '%'
+  - '%{hiera(''mysql_bind_host'')}'
+  keystone::db::mysql::dbname: keystone
+  keystone::db::mysql::host: 10.2.120.4
+  keystone::db::mysql::password: pwd947bwt7jvqrrdd4vcxx2f7
+  keystone::db::mysql::user: keystone
+  neutron::db::mysql::allowed_hosts:
+  - '%'
+  - '%{hiera(''mysql_bind_host'')}'
+  neutron::db::mysql::dbname: ovs_neutron
+  neutron::db::mysql::host: 10.2.120.4
+  neutron::db::mysql::password: jqfd8znjclkrmvnp62mgkmqj7
+  neutron::db::mysql::user: neutron
+  nova::db::mysql::allowed_hosts:
+  - '%'
+  - '%{hiera(''mysql_bind_host'')}'
+  nova::db::mysql::dbname: nova
+  nova::db::mysql::host: 10.2.120.4
+  nova::db::mysql::password: 9sjllnf27xprs9hc9mvcddrkf
+  nova::db::mysql::user: nova
+  nova::db::mysql_api::allowed_hosts:
+  - '%'
+  - '%{hiera(''mysql_bind_host'')}'
+  nova::db::mysql_api::dbname: nova_api
+  nova::db::mysql_api::host: 10.2.120.4
+  nova::db::mysql_api::password: 9sjllnf27xprs9hc9mvcddrkf
+  nova::db::mysql_api::user: nova_api
+  placement::db::mysql::allowed_hosts:
+  - '%'
+  - '%{hiera(''mysql_bind_host'')}'
+  placement::db::mysql::dbname: placement
+  placement::db::mysql::host: 10.2.120.4
+  placement::db::mysql::password: 29qc42rmjspjphfgbbx4ctjbp
+  placement::db::mysql::user: placement
+pacemaker:
+  keystone::admin_password: hcw8m54r92mms97hbhj27l2vc
+  keystone::endpoint::admin_url: http://10.62.62.100:35357
+  keystone::endpoint::internal_url: http://10.2.120.4:5000
+  keystone::endpoint::public_url: http://172.31.255.130:5000
+  keystone::endpoint::region: regionOne
+rabbitmq:
+  get_attr:
+  - NovaBase
+  - role_data
+  - service_config_settings
+  rabbitmq: null
+rsyslog:
+  tripleo_logging_sources_ceilometer_agent_central:
+  - file: /var/log/containers/ceilometer/central.log
+    tag: openstack.ceilometer.agent.central
+  tripleo_logging_sources_ceilometer_agent_notification:
+  - file: /var/log/containers/ceilometer/agent-notification.log
+    tag: openstack.ceilometer.agent.notification
+  tripleo_logging_sources_cinder_scheduler:
+  - file: /var/log/containers/cinder/cinder-scheduler.log
+    tag: openstack.cinder.scheduler
+  tripleo_logging_sources_cinder_volume:
+  - file: /var/log/containers/cinder/cinder-volume.log
+    tag: openstack.cinder.volume
+  tripleo_logging_sources_glance_api:
+  - file: /var/log/containers/glance/api.log
+    tag: openstack.glance.api
+  tripleo_logging_sources_heat_api:
+  - file: /var/log/containers/heat/heat_api.log
+    tag: openstack.heat.api
+  tripleo_logging_sources_heat_api_cfn:
+  - file: /var/log/containers/heat/heat_api_cfn.log
+    tag: openstack.heat.api.cfn
+  tripleo_logging_sources_heat_engine:
+  - file: /var/log/containers/heat/heat-engine.log
+    tag: openstack.heat.engine
+  tripleo_logging_sources_horizon:
+  - file: /var/log/containers/horizon/horizon.log
+    tag: openstack.horizon
+  tripleo_logging_sources_keystone:
+    file: /var/log/containers/keystone/keystone.log
+    tag: openstack.keystone
+  tripleo_logging_sources_metrics_qdr:
+  - file: /var/log/containers/qdrouterd/metrics_qdr.log
+    startmsg.regex: '^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}(.[0-9]+
+      \+[0-9]+)? [A-Z]+ \([a-z]+\) '
+    tag: openstack.nova.consoleauth
+  tripleo_logging_sources_neutron_api:
+  - file: /var/log/containers/neutron/server.log
+    tag: openstack.neutron.api
+  tripleo_logging_sources_nova_api:
+  - file: /var/log/containers/nova/nova-api.log
+    tag: openstack.nova.api
+  tripleo_logging_sources_nova_conductor:
+  - file: /var/log/containers/nova/nova-conductor.log
+    tag: openstack.nova.conductor
+  tripleo_logging_sources_nova_metadata:
+  - file: /var/log/containers/nova/nova-metadata-api.log
+    tag: openstack.nova.api.metadata
+  tripleo_logging_sources_nova_scheduler:
+  - file: /var/log/containers/nova/nova-scheduler.log
+    tag: openstack.nova.scheduler
+  tripleo_logging_sources_nova_vnc_proxy:
+  - file: /var/log/containers/nova/nova-novncproxy.log
+    tag: openstack.nova.vncproxy
+  tripleo_logging_sources_pacemaker:
+  - file: /var/log/host/pacemaker/pacemaker.log
+    startmsg.regex: ^[a-zA-Z]{3} [0-9]{2} [:0-9]{8}
+    tag: system.pacemaker

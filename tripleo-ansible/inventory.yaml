@@ -1,0 +1,406 @@
+Undercloud:
+  hosts:
+    undercloud: {}
+  vars:
+    ansible_connection: local
+    ansible_host: localhost
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_remote_tmp: /tmp/ansible-${USER}
+    auth_url: null
+    cacert: null
+    os_auth_token: null
+    overcloud_admin_password: hcw8m54r92mms97hbhj27l2vc
+    overcloud_horizon_url: http://172.31.255.130:80/dashboard
+    overcloud_keystone_url: http://172.31.255.130:5000
+    plan: overcloud
+    project_name: null
+    undercloud_service_list: [tripleo_nova_compute, tripleo_heat_engine, tripleo_ironic_conductor,
+      tripleo_swift_container_server, tripleo_swift_object_server, tripleo_mistral_engine]
+    undercloud_swift_url: null
+    username: null
+Controller:
+  hosts:
+    controller-0: {ansible_host: 10.62.62.105, canonical_hostname: controller-0.vimosp.local,
+      ctlplane_hostname: controller-0.ctlplane.vimosp.local, ctlplane_ip: 10.62.62.105,
+      deploy_server_id: 9f9ad6ec-fa12-48c7-ab06-6bc91348e5da, external_hostname: controller-0.external.vimosp.local,
+      external_ip: 172.31.255.135, internal_api_hostname: controller-0.internalapi.vimosp.local,
+      internal_api_ip: 10.2.120.9, storage_hostname: controller-0.storage.vimosp.local,
+      storage_ip: 10.3.130.5, storage_mgmt_hostname: controller-0.storagemgmt.vimosp.local,
+      storage_mgmt_ip: 10.4.140.5}
+    controller-1: {ansible_host: 10.62.62.106, canonical_hostname: controller-1.vimosp.local,
+      ctlplane_hostname: controller-1.ctlplane.vimosp.local, ctlplane_ip: 10.62.62.106,
+      deploy_server_id: 4ec68b3b-a09d-4127-b99a-a2439b4ecff9, external_hostname: controller-1.external.vimosp.local,
+      external_ip: 172.31.255.136, internal_api_hostname: controller-1.internalapi.vimosp.local,
+      internal_api_ip: 10.2.120.10, storage_hostname: controller-1.storage.vimosp.local,
+      storage_ip: 10.3.130.6, storage_mgmt_hostname: controller-1.storagemgmt.vimosp.local,
+      storage_mgmt_ip: 10.4.140.6}
+    controller-2: {ansible_host: 10.62.62.107, canonical_hostname: controller-2.vimosp.local,
+      ctlplane_hostname: controller-2.ctlplane.vimosp.local, ctlplane_ip: 10.62.62.107,
+      deploy_server_id: 929d4b2f-a783-4d3f-8221-efa6a507cc2b, external_hostname: controller-2.external.vimosp.local,
+      external_ip: 172.31.255.137, internal_api_hostname: controller-2.internalapi.vimosp.local,
+      internal_api_ip: 10.2.120.11, storage_hostname: controller-2.storage.vimosp.local,
+      storage_ip: 10.3.130.7, storage_mgmt_hostname: controller-2.storagemgmt.vimosp.local,
+      storage_mgmt_ip: 10.4.140.7}
+  vars:
+    ansible_ssh_user: cloud-admin
+    bootstrap_server_id: 9f9ad6ec-fa12-48c7-ab06-6bc91348e5da
+    serial: 1
+    tripleo_role_name: Controller
+    tripleo_role_networks: [ctlplane, external, internal_api, storage, storage_mgmt]
+ContrailController:
+  hosts:
+    contrailcontroller-0: {ansible_host: 10.62.62.101, canonical_hostname: contrailcontroller-0.vimosp.local,
+      ctlplane_hostname: contrailcontroller-0.ctlplane.vimosp.local, ctlplane_ip: 10.62.62.101,
+      deploy_server_id: 89ab3284-698f-4e06-b77b-6c6ee7ded4b3, external_hostname: contrailcontroller-0.external.vimosp.local,
+      external_ip: 172.31.255.131, internal_api_hostname: contrailcontroller-0.internalapi.vimosp.local,
+      internal_api_ip: 10.2.120.5, tenant_hostname: contrailcontroller-0.tenant.vimosp.local,
+      tenant_ip: 10.1.110.5}
+    contrailcontroller-1: {ansible_host: 10.62.62.102, canonical_hostname: contrailcontroller-1.vimosp.local,
+      ctlplane_hostname: contrailcontroller-1.ctlplane.vimosp.local, ctlplane_ip: 10.62.62.102,
+      deploy_server_id: e69a7afa-8f8b-4e00-8e5b-486253aa3548, external_hostname: contrailcontroller-1.external.vimosp.local,
+      external_ip: 172.31.255.132, internal_api_hostname: contrailcontroller-1.internalapi.vimosp.local,
+      internal_api_ip: 10.2.120.6, tenant_hostname: contrailcontroller-1.tenant.vimosp.local,
+      tenant_ip: 10.1.110.6}
+    contrailcontroller-2: {ansible_host: 10.62.62.103, canonical_hostname: contrailcontroller-2.vimosp.local,
+      ctlplane_hostname: contrailcontroller-2.ctlplane.vimosp.local, ctlplane_ip: 10.62.62.103,
+      deploy_server_id: 914b5a57-67e2-4eb3-9d62-662566891b16, external_hostname: contrailcontroller-2.external.vimosp.local,
+      external_ip: 172.31.255.133, internal_api_hostname: contrailcontroller-2.internalapi.vimosp.local,
+      internal_api_ip: 10.2.120.7, tenant_hostname: contrailcontroller-2.tenant.vimosp.local,
+      tenant_ip: 10.1.110.7}
+  vars:
+    ansible_ssh_user: cloud-admin
+    bootstrap_server_id: 9f9ad6ec-fa12-48c7-ab06-6bc91348e5da
+    serial: 1
+    tripleo_role_name: ContrailController
+    tripleo_role_networks: [ctlplane, external, internal_api, tenant]
+ComputeNFV:
+  hosts:
+    computenfv-0: {ansible_host: 10.62.62.108, canonical_hostname: computenfv-0.vimosp.local,
+      ctlplane_hostname: computenfv-0.ctlplane.vimosp.local, ctlplane_ip: 10.62.62.108,
+      deploy_server_id: 1d8891ee-818c-42e2-b762-919cd1b29e87, external_hostname: computenfv-0.external.vimosp.local,
+      external_ip: 172.31.255.138, internal_api_hostname: computenfv-0.internalapi.vimosp.local,
+      internal_api_ip: 10.2.120.12, storage_hostname: computenfv-0.storage.vimosp.local,
+      storage_ip: 10.3.130.8, storage_mgmt_hostname: computenfv-0.storagemgmt.vimosp.local,
+      storage_mgmt_ip: 10.4.140.8, tenant_hostname: computenfv-0.tenant.vimosp.local,
+      tenant_ip: 10.1.110.8}
+  vars:
+    ansible_ssh_user: cloud-admin
+    bootstrap_server_id: 9f9ad6ec-fa12-48c7-ab06-6bc91348e5da
+    serial: 1
+    tripleo_role_name: ComputeNFV
+    tripleo_role_networks: [ctlplane, external, internal_api, storage, storage_mgmt,
+      tenant]
+allovercloud:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {container_cli: podman, ctlplane_vip: 10.62.62.100, external_vip: 172.31.255.130,
+    internal_api_vip: 10.2.120.4, redis_vip: 10.62.62.100, storage_mgmt_vip: 10.4.140.4,
+    storage_vip: 10.3.130.4}
+overcloud:
+  children:
+    allovercloud: {}
+horizon:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+keystone_public_api:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+neutron_api:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+sshd:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+nova_api:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+heat_api:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+oslo_messaging_rpc:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_webui:
+  children:
+    ContrailController: {}
+  vars: {ansible_ssh_user: cloud-admin}
+nova_libvirt:
+  children:
+    ComputeNFV: {}
+  vars: {ansible_ssh_user: cloud-admin}
+haproxy:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+cinder_volume:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+heat_engine:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_vrouter_dpdk:
+  children:
+    ComputeNFV: {}
+  vars: {ansible_ssh_user: cloud-admin}
+kernel:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_neutron_plugin:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_heat_plugin:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_config:
+  children:
+    ContrailController: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_analytics_alarm:
+  children:
+    ContrailController: {}
+  vars: {ansible_ssh_user: cloud-admin}
+snmp:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+nova_conductor:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+collectd:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+heat_api_cloudwatch_disabled:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+cinder_scheduler:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+container_image_prepare:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+redis:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+tuned:
+  children:
+    ComputeNFV: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+nova_migration_target:
+  children:
+    ComputeNFV: {}
+  vars: {ansible_ssh_user: cloud-admin}
+chrony:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+mysql_client:
+  children:
+    ComputeNFV: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+nova_metadata:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+glance_api:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+rhsm:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+tripleo_packages:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+metrics_qdr:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+boot_params_service:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+certmonger_user:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+swift_proxy:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+swift_storage:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+nova_scheduler:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+placement:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+rsyslog:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+timezone:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+nova_compute:
+  children:
+    ComputeNFV: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_control:
+  children:
+    ContrailController: {}
+  vars: {ansible_ssh_user: cloud-admin}
+ceilometer_agent_compute:
+  children:
+    ComputeNFV: {}
+  vars: {ansible_ssh_user: cloud-admin}
+nova_vnc_proxy:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+logrotate_crond:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_vrouter_sriov:
+  children:
+    ComputeNFV: {}
+  vars: {ansible_ssh_user: cloud-admin}
+ceilometer_agent_notification:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+podman:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+clustercheck:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+keystone:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+pacemaker:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+ceilometer_agent_central:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+memcached:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+oslo_messaging_notify:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_analytics_snmp:
+  children:
+    ContrailController: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_database:
+  children:
+    ContrailController: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_analytics:
+  children:
+    ContrailController: {}
+  vars: {ansible_ssh_user: cloud-admin}
+mysql:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+swift_ringbuilder:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+contrail_analytics_database:
+  children:
+    ContrailController: {}
+  vars: {ansible_ssh_user: cloud-admin}
+tripleo_firewall:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+iscsid:
+  children:
+    ComputeNFV: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+ca_certs:
+  children:
+    ComputeNFV: {}
+    ContrailController: {}
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+cinder_api:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+heat_api_cfn:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}
+keystone_admin_api:
+  children:
+    Controller: {}
+  vars: {ansible_ssh_user: cloud-admin}

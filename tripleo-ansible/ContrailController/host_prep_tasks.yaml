@@ -1,0 +1,1218 @@
+- copy:
+    content: '#!/bin/bash
+
+      /var/lib/container-config-scripts/pacemaker_mutex_restart_bundle.sh --lock $*
+      2>&1 | logger -t certmonger'
+    dest: /usr/bin/certmonger-ha-resource-refresh.sh
+    mode: '0700'
+    setype: certmonger_unconfined_exec_t
+  name: create certificate rotation script for HA services
+- file:
+    mode: '{{ item.mode }}'
+    path: '{{ item.path }}'
+    setype: '{{ item.setype }}'
+    state: directory
+  name: create persistent directories
+  with_items:
+  - mode: '0750'
+    path: /var/log/containers/collectd
+    setype: svirt_sandbox_file_t
+- include_role:
+    name: tripleo_provision_mcelog
+  name: import provision_mcelog
+  when: false
+- name: allow logrotate to read inside containers
+  seboolean:
+    name: logrotate_read_inside_containers
+    persistent: true
+    state: true
+- include_role:
+    name: tripleo-kernel
+- import_role:
+    name: redhat-subscription
+  name: Red Hat Subscription Management configuration during deployment
+  vars:
+    rhsm_activation_key: osp16-2-dev-overcloud
+    rhsm_baseurl: https://satellite.mgmt.tmeprj2.comm.red.ibm.gsc/pulp/repos
+    rhsm_force_register: true
+    rhsm_method: satellite
+    rhsm_org_id: default
+    rhsm_release: 8.4
+    rhsm_server_hostname: satellite.mgmt.tmeprj2.comm.red.ibm.gsc
+- block:
+  - name: Set login facts
+    set_fact:
+      container_default_pids_limit: 4096
+      container_events_logger_mechanism: journald
+      container_registry_insecure_registries:
+      - satellite.mgmt.tmeprj2.comm.red.ibm.gsc:5000
+      container_registry_login: true
+      container_registry_logins: {}
+      container_registry_logins_json: {}
+  - name: Convert logins json to dict
+    set_fact:
+      container_registry_logins: '{{ container_registry_logins_json | from_json }}'
+    when:
+    - container_registry_logins_json is string
+    - container_registry_login | bool
+    - (container_registry_logins_json | length) > 0
+  - name: Set registry logins
+    set_fact:
+      container_registry_logins: '{{ container_registry_logins_json }}'
+    when:
+    - container_registry_logins_json is mapping
+    - container_registry_login | bool
+    - (container_registry_logins_json | length) > 0
+  - include_role:
+      name: tripleo-podman
+      tasks_from: tripleo_podman_install.yml
+    name: Run podman install
+    vars:
+      tripleo_container_default_pids_limit: '{{ container_default_pids_limit }}'
+      tripleo_container_events_logger_mechanism: '{{ container_events_logger_mechanism
+        }}'
+      tripleo_container_registry_insecure_registries: '{{ container_registry_insecure_registries
+        }}'
+  - include_role:
+      name: tripleo-podman
+      tasks_from: tripleo_podman_login.yml
+    name: Run podman login
+    vars:
+      tripleo_container_registry_login: '{{ container_registry_login | bool }}'
+      tripleo_container_registry_logins: '{{ container_registry_logins }}'
+  name: Install and configure Podman
+- copy:
+    content: 'This file makes paunch generate additional systemd
+
+      dependencies for containers that have special
+
+      start/stop ordering constraints. It ensures that
+
+      those constraints are enforced on reboot/shutdown.
+
+      '
+    dest: /etc/sysconfig/podman_drop_in
+  name: Configure paunch to generate systemd drop-in dependencies
+- become: true
+  failed_when: false
+  name: Check for NTP service
+  register: ntp_service_check
+  shell: systemctl is-active ntpd.service || systemctl is-enabled ntpd.service
+- name: Disable NTP before configuring Chrony
+  service:
+    enabled: false
+    name: ntpd
+    state: stopped
+  when:
+  - ntp_service_check.rc is defined
+  - ntp_service_check.rc == 0
+- include_role:
+    name: chrony
+  name: Install, Configure and Run Chrony
+- meta: flush_handlers
+  name: Ensure chrony has been restarted
+- command: chronyc makestep
+  name: Ensure system is NTP time synced
+- name: Set timezone fact
+  set_fact:
+    timezone: UTC
+- name: Set timezone to {{ timezone | default('UTC') }}
+  register: timezone_result
+  timezone:
+    name: '{{ timezone }}'
+- failed_when: false
+  name: Restart services
+  service:
+    name: '{{ item }}'
+    state: restarted
+  when:
+  - timezone_result.changed
+  with_items:
+  - rsyslog
+  - crond
+- block:
+  - name: register common env file
+    register: p
+    stat:
+      path: /etc/contrail/common_contrail.env
+  - copy:
+      content: ''
+      dest: /etc/contrail/common_contrail.env
+    name: create common env file
+    when: not p.stat.exists
+  - name: set contrail base calculated parameters
+    set_fact:
+      contrail_base_env_params:
+        AAA_MODE: cloud-admin
+        CLOUD_ORCHESTRATOR: openstack
+        OPENSTACK_VERSION: train
+        REDIS_SERVER_PORT: 6379
+  - lineinfile:
+      dest: /etc/contrail/common_contrail.env
+      line: '{{ item.key }}={{ item.value }}'
+      regexp: ^{{ item.key }}.*
+      state: present
+    name: write contrail base parameters to environment file
+    with_dict: '{{ contrail_base_env_params }}'
+  - name: get external contrail config node ips
+    register: contrail_config_ips
+    shell: hiera -c /etc/puppet/hiera.yaml contrail_config_ips
+  - name: turn contrail config ips into string
+    set_fact:
+      contrail_config_ips_arr: '{{ contrail_config_ips.stdout | regex_replace(''nil'',
+        ''[]'') | to_json | from_json }}'
+  - set_fact:
+      contrail_config_ips_string: '{{ contrail_config_ips_string | default('''')  +
+        '' '' + item }}'
+    with_items: '{{ contrail_config_ips_arr }}'
+  - set_fact:
+      contrail_config_ips_string: '{{ contrail_config_ips_string | default('''') |
+        trim | regex_replace('' '', '','') }}'
+  - name: contrail operator node ips (names) param name
+    set_fact:
+      contrail_nodes_param_name: contrail_operator_node_ips
+  - name: get contrail operator node ips
+    register: contrail_operator_nodes_list
+    shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+  - name: turn contrail operator ips into string
+    set_fact:
+      contrail_operator_nodes_string: '{{ contrail_operator_nodes_list.stdout | regex_replace(''nil'',
+        ''[]'') | from_json | join('','') }}'
+  - name: set contrail config ips
+    set_fact:
+      contrail_config_nodes_string: '{{ contrail_config_ips_string }}'
+  - block:
+    - name: config api node ips (names) param name
+      set_fact:
+        contrail_nodes_param_name: contrail_config_node_ips
+    - name: get contrail config node ips
+      register: contrail_config_nodes_list
+      shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+    - name: turn contrail config ips into string
+      set_fact:
+        contrail_config_nodes_string: '{{ contrail_config_nodes_list.stdout | regex_replace(''nil'',
+          ''[]'') | from_json | join('','') }}'
+    - name: set contrail config list to operator nodes if empty
+      set_fact:
+        contrail_config_nodes_string: '{{ contrail_operator_nodes_string }}'
+      when: contrail_config_nodes_string == ''
+    when: contrail_config_nodes_string == ''
+  - name: config db node ips (names) param name
+    set_fact:
+      contrail_nodes_param_name: contrail_database_node_ips
+  - name: get contrail config database node ips
+    register: contrail_database_nodes_list
+    shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+  - name: turn contrail config db ips into string
+    set_fact:
+      contrail_database_nodes_string: '{{ contrail_database_nodes_list.stdout | regex_replace(''nil'',
+        ''[]'') | from_json | join('','') }}'
+  - name: get external contrail control node ips
+    register: contrail_control_nodes_list
+    shell: hiera -c /etc/puppet/hiera.yaml contrail_control_ips
+  - name: set contrail control ips
+    set_fact:
+      contrail_control_nodes_string: '{{ contrail_control_nodes_list.stdout | regex_replace(''nil'',
+        '''') }}'
+  - block:
+    - name: config node ips (names) param name
+      set_fact:
+        contrail_nodes_param_name: contrail_control_node_ips
+    - name: get contrail control node ips
+      register: contrail_control_nodes_list
+      shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+    - name: turn contrail control ips into string
+      set_fact:
+        contrail_control_nodes_string: '{{ contrail_control_nodes_list.stdout | regex_replace(''nil'',
+          ''[]'') | from_json | join('','') }}'
+    - name: set control list to operator nodes if empty
+      set_fact:
+        contrail_control_nodes_string: '{{ contrail_operator_nodes_string }}'
+      when: contrail_control_nodes_string == ''
+    when: contrail_control_nodes_string == ''
+  - name: get external contrail analytics node ips
+    register: contrail_analytics_nodes_list
+    shell: hiera -c /etc/puppet/hiera.yaml contrail_analytics_ips
+  - name: set contrail analytics ips
+    set_fact:
+      contrail_analytics_nodes_string: '{{ contrail_analytics_nodes_list.stdout |
+        regex_replace(''nil'', '''') }}'
+  - block:
+    - name: analytics node ips (names) param name
+      set_fact:
+        contrail_nodes_param_name: contrail_analytics_node_ips
+    - name: get contrail analytics node ips
+      register: contrail_analytics_nodes_list
+      shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+    - name: turn contrail analytics ips into string
+      set_fact:
+        contrail_analytics_nodes_string: '{{ contrail_analytics_nodes_list.stdout
+          | regex_replace(''nil'', ''[]'') | from_json | join('','') }}'
+    - name: set analytics list to operator nodes if empty
+      set_fact:
+        contrail_analytics_nodes_string: '{{ contrail_operator_nodes_string }}'
+      when: contrail_analytics_nodes_string == ''
+    when: contrail_analytics_nodes_string == ''
+  - name: snmp node ips (names) param name
+    set_fact:
+      contrail_nodes_param_name: contrail_analytics_snmp_node_ips
+  - name: get contrail analytics snmp node ips
+    register: contrail_analytics_snmp_nodes_list
+    shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+  - name: turn contrail analytics snmp ips into string
+    set_fact:
+      contrail_analytics_snmp_nodes_string: '{{ contrail_analytics_snmp_nodes_list.stdout
+        | regex_replace(''nil'', ''[]'') | from_json | join('','') }}'
+  - name: alarm node ips (names) param name
+    set_fact:
+      contrail_nodes_param_name: contrail_analytics_alarm_node_ips
+  - name: get contrail analytics alarm node ips
+    register: contrail_analytics_alarm_nodes_list
+    shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+  - name: turn contrail analytics ips into string
+    set_fact:
+      contrail_analytics_alarm_nodes_string: '{{ contrail_analytics_alarm_nodes_list.stdout
+        | regex_replace(''nil'', ''[]'') | from_json | join('','') }}'
+  - name: analytics db node ips (names) param name
+    set_fact:
+      contrail_nodes_param_name: contrail_analytics_database_node_ips
+  - name: get contrail analytics database node ips
+    register: contrail_analytics_database_nodes_list
+    shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+  - name: turn contrail analytics database ips into string
+    set_fact:
+      contrail_analytics_database_nodes_string: '{{ contrail_analytics_database_nodes_list.stdout
+        | regex_replace(''nil'', ''[]'') | from_json | join('','') }}'
+  - name: kafka services specific node ips param name
+    set_fact:
+      contrail_nodes_param_name: contrail_analytics_alarm_node_ips
+  - name: get contrail service specific node ips
+    register: contrail_service_nodes_list
+    shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_nodes_param_name }}
+  - name: turn contrail service specific node ips into string
+    set_fact:
+      contrail_kafka_service_nodes_string: '{{ contrail_service_nodes_list.stdout
+        | regex_replace(''nil'', ''[]'') | from_json | join('','')  }}'
+  - lineinfile:
+      dest: /etc/contrail/common_contrail.env
+      line: '{{ item.key }}={{ item.value }}'
+      regexp: ^{{ item.key }}.*
+      state: present
+    name: write contrail config node ips to environment file
+    with_dict:
+      ANALYTICSDB_ENABLE: '{{ ''True'' if contrail_analytics_database_nodes_string
+        != '''' else ''False'' }}'
+      ANALYTICSDB_NODES: '{{ contrail_analytics_database_nodes_string }}'
+      ANALYTICS_ALARM_ENABLE: '{{ ''True'' if contrail_analytics_alarm_nodes_string
+        != '''' else ''False'' }}'
+      ANALYTICS_ALARM_NODES: '{{ contrail_analytics_alarm_nodes_string }}'
+      ANALYTICS_NODES: '{{ contrail_analytics_nodes_string }}'
+      ANALYTICS_SNMP_ENABLE: '{{ ''True'' if contrail_analytics_snmp_nodes_string
+        != '''' else ''False'' }}'
+      ANALYTICS_SNMP_NODES: '{{ contrail_analytics_snmp_nodes_string }}'
+      CONFIGDB_NODES: '{{ contrail_database_nodes_string }}'
+      CONFIG_NODES: '{{ contrail_config_nodes_string }}'
+      CONTROL_NODES: '{{ contrail_control_nodes_string }}'
+      DNS_NODES: '{{ contrail_control_nodes_string }}'
+      KAFKA_NODES: '{{ contrail_kafka_service_nodes_string }}'
+      RABBITMQ_NODES: '{{ contrail_database_nodes_string }}'
+      RABBITMQ_NODE_PORT: 5673
+  - name: role specific contrail_settings
+    set_fact:
+      contrail_settings:
+        BGP_ASN: 64520
+        BGP_AUTO_MESH: true
+        HEAP_NEWSIZE: 2G
+        MAX_HEAP_SIZE: 16G
+        VROUTER_ENCRYPTION: false
+        VROUTER_GATEWAY: 10.1.110.1
+  - name: get dmi
+    register: dmi
+    shell: '#!/bin/sh
+
+      dmidecode --s system-uuid | awk ''match($0, /[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}/)
+      { print substr($0, RSTART, RLENGTH) }''
+
+      '
+  - name: set dmi fact
+    set_fact:
+      dmi_uuid: '{{ dmi.stdout }}'
+  - name: get node specific contrail_settings
+    register: contrail_settings_string
+    shell: hiera -c /etc/puppet/hiera.yaml contrail_settings ::uuid={{ dmi_uuid }}
+      | sed 's/=>/:/g'
+  - block:
+    - set_fact:
+        contrail_settings_json: '{{ contrail_settings_string.stdout | from_json }}'
+    - set_fact:
+        contrail_settings: '{{ contrail_settings | combine({item.key: item.value})
+          }}'
+      with_dict: '{{ contrail_settings_json }}'
+    name: merge node and role specific contrail_settings
+    when:
+    - contrail_settings_string.stdout is defined
+    - contrail_settings_string.stdout != "nil"
+  - lineinfile:
+      dest: /etc/contrail/common_contrail.env
+      line: '{{ item.key }}={{ item.value }}'
+      regexp: ^{{ item.key }}.*
+      state: present
+    name: write contrail settings to file
+    when: contrail_settings is defined
+    with_dict: '{{ contrail_settings }}'
+  - block:
+    - blockinfile:
+        block: "module contrail_nodemgr 1.0;\n\nrequire {\n        type unconfined_t;\n\
+          \        type container_share_t;\n        class file entrypoint;\n}\n\n\
+          #============= unconfined_t ==============\n##!!!! The file '/usr/bin/conmon'\
+          \ is mislabeled on your system.\n##!!!! Fix with $ restorecon -R -v /usr/bin/conmon\n\
+          allow unconfined_t container_share_t:file entrypoint;\n"
+        create: true
+        path: /tmp/contrail_nodemgr.te
+      name: create policy file for nodemgr
+    - name: create contrail nodemgr selinux policy module
+      shell: /bin/checkmodule -M -m -o /tmp/contrail_nodemgr.mod /tmp/contrail_nodemgr.te
+    - name: create contrail nodemgr selinux policy package
+      shell: /bin/semodule_package -o /tmp/contrail_nodemgr.pp -m /tmp/contrail_nodemgr.mod
+    - name: install contrail nodemgr selinux policy package
+      shell: /sbin/semodule -i /tmp/contrail_nodemgr.pp
+    name: create selinux policy file for nodemgr
+  - name: contrail_selfsigned_ca_flag
+    set_fact:
+      contrail_selfsigned_ca_flag: 'true'
+  - block:
+    - name: contrail cert file
+      set_fact:
+        contrail_cert_file: ''
+    - name: contrail key file
+      set_fact:
+        contrail_certkey_file: ''
+    - name: remove current cert files
+      shell: rm -f {{ contrail_cert_file }} {{ contrail_certkey_file }}
+    - name: re-run node-init container
+      shell: "if {{ container_cli }} inspect contrail-node-init >/dev/null 2>&1 ;\
+        \ then\n  {{ container_cli }} start -i contrail-node-init\nfi\n"
+    name: Re-create Contrail self-signed certs
+    when: '{{ contrail_selfsigned_ca_flag | bool }}'
+  name: Contrail Base host prep tasks
+- block:
+  - blockinfile:
+      block: '(block contrail_container
+
+        (allow chkpwd_t container_file_t (lnk_file (read)))
+
+        (allow container_t cloud_init_t ( unix_dgram_socket ( sendto )))
+
+        (allow container_t container_file_t (chr_file (read)))
+
+        (allow container_t container_share_t ( file ( entrypoint )))
+
+        (allow container_t container_var_run_t (file ( openat open read write lock
+        )))
+
+        (allow container_t mount_var_run_t (dir ( openat read write )))
+
+        (allow container_t spc_t (dir (getattr)))
+
+        (allow container_t spc_t (fifo_file (write ioctl getattr setattr)))
+
+        (allow container_t system_dbusd_t (dbus (send_msg)))
+
+        (allow container_t var_t ( dir ( openat open read getattr lock search ioctl
+        add_name remove_name write setattr create )))
+
+        (allow container_t var_t ( file ( getattr read write append ioctl lock map
+        open create setattr unlink )))
+
+        (allow container_t var_t ( sock_file ( getattr read write append open )))
+
+        (allow container_t var_lib_t ( dir ( openat open read getattr lock search
+        ioctl add_name remove_name write setattr create )))
+
+        (allow container_t var_lib_t ( file ( getattr read write append ioctl lock
+        map open create setattr unlink )))
+
+        (allow container_t var_lib_t ( sock_file ( getattr read write append open
+        )))
+
+        (allow chronyc_t container_file_t (lnk_file ( read )))
+
+        (allow chronyd_t container_file_t (lnk_file ( read )))
+
+        (allow chronyd_t container_file_t ( file ( open getattr read)))
+
+        (allow chronyd_t spc_t ( unix_dgram_socket ( sendto )))
+
+        (allow chronyd_t cloud_init_t ( unix_dgram_socket ( sendto )))
+
+        (allow certmonger_t sudo_exec_t ( file ( execute execute_no_trans open read
+        )))
+
+        (allow certmonger_t container_file_t ( dir ( search open read getattr setattr
+        add_name remove_name create )))
+
+        (allow certmonger_t container_file_t ( file ( getattr read write append ioctl
+        lock map open create setattr unlink )))
+
+        (allow certmonger_t container_file_t ( lnk_file ( read )))
+
+        (allow certmonger_t self ( capability ( sys_resource )))
+
+        (allow certmonger_t self ( netlink_audit_socket ( create )))
+
+        (allow certmonger_t sssd_conf_t ( dir ( search openat read write )))
+
+        (allow certmonger_t sssd_conf_t ( file ( getattr read open )))
+
+        (allow certmonger_t chkpwd_exec_t ( file ( execute )))
+
+        (allow certmonger_t self  (process ( setrlimit )))
+
+        (allow dhcpc_t container_file_t (file ( open getattr setattr read write)))
+
+        (allow kmod_t container_file_t (system ( module_load )))
+
+        (allow named_t container_file_t (file (open getattr read)))
+
+        (allow NetworkManager_t container_file_t (file (read open)))
+
+        (allow rhsmcertd_t container_file_t (file (open getattr read)))
+
+        (allow setroubleshootd_t container_file_t (file (open getattr read)))
+
+        (allow snmpd_t container_file_t (file (open read getattr)))
+
+        (allow sshd_t container_file_t (lnk_file (read)))
+
+        (allow sssd_t container_file_t (file (open getattr read)))
+
+        (allow system_dbusd_t container_file_t (lnk_file (read)))
+
+        (allow systemd_logind_t container_file_t (lnk_file (read)))
+
+        (allow svirt_tcg_t container_file_t ( dir ( read  )))
+
+        (allow timedatex_t container_file_t ( lnk_file ( read )))
+
+        (allow systemd_sysctl_t container_file_t ( file ( getattr open read )))
+
+        )
+
+        '
+      create: true
+      marker: ; {mark} ANSIBLE MANAGED BLOCK
+      path: /tmp/contrail_container.cil
+    name: create selinux module file /tmp/contrail_container.cil
+  - name: create selinux module from file /tmp/contrail_container.cil
+    shell: /sbin/semodule -i /tmp/contrail_container.cil
+  name: create selinux module for unprivileged contrail containers
+- name: register create contrail analytics env file
+  register: p
+  stat:
+    path: /etc/contrail/common_analytics.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_analytics.env
+  name: create contrail analytics env file
+  when: not p.stat.exists
+- lineinfile:
+    dest: /etc/contrail/common_analytics.env
+    line: '{{ item }}'
+    state: present
+  name: write remaining contrail analytics env cars
+  with_items:
+  - NODE_TYPE=analytics
+- name: service config name
+  set_fact:
+    contrail_conf_name: analytics
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_analytics
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: register create contrail analytics alarm env file
+  register: p
+  stat:
+    path: /etc/contrail/common_analytics_alarm.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_analytics_alarm.env
+  name: create contrail analytics alarm env file
+  when: not p.stat.exists
+- set_fact:
+    alarm_env_vars:
+    - NODE_TYPE=analytics-alarm
+- lineinfile:
+    dest: /etc/contrail/common_analytics_alarm.env
+    line: '{{ item }}'
+    regexp: ^NODE_TYPE=
+    state: present
+  name: write remaining contrail analytics alarm env vars
+  with_items: '{{ alarm_env_vars }}'
+- name: register create contrail analytics kafka env file
+  register: p
+  stat:
+    path: /etc/contrail/common_analytics_kafka.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_analytics_kafka.env
+  name: create contrail analytics kafka env file
+  when: not p.stat.exists
+- name: contrail analytics kafka node ips param name
+  set_fact:
+    contrail_analytics_kafka_param_name: contrail_analytics_alarm_node_ips
+- name: get contrail analytics kafka specific node ips
+  register: contrail_analytics_kafka_nodes_list
+  shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_analytics_kafka_param_name }}
+- name: turn contrail service specific node ips into string
+  set_fact:
+    contrail_analytics_kafka_nodes_string: '{{ contrail_analytics_kafka_nodes_list.stdout
+      | regex_replace(''nil'', ''[]'') | from_json | join('','')  }}'
+- set_fact:
+    kafka_env_vars:
+    - ZOOKEEPER_PORTS=4888:5888
+    - ZOOKEEPER_PORT=2182
+    - ZOOKEEPER_NODES={{ contrail_analytics_kafka_nodes_string }}
+    - ZOOKEEPER_ANALYTICS_PORT=2182
+    - ZOOKEEPER_ANALYTICS_NODES={{ contrail_analytics_kafka_nodes_string }}
+- set_fact:
+    kafka_env_vars: '{{ kafka_env_vars + [''NODE_TYPE=analytics-alarm''] }}'
+- lineinfile:
+    dest: /etc/contrail/common_analytics_kafka.env
+    line: '{{ item }}'
+    regexp: ^NODE_TYPE=
+    state: present
+  name: write remaining contrail analytics kafka env vars
+  with_items: '{{ kafka_env_vars }}'
+- name: service config name
+  set_fact:
+    contrail_conf_name: analytics_kafka
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_analytics_kafka
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: service config name
+  set_fact:
+    contrail_conf_name: analytics_alarm
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_analytics_alarm
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: register contrail analytics database env file
+  register: p
+  stat:
+    path: /etc/contrail/common_analytics_database.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_analytics_database.env
+  name: create contrail analytics database env file
+  when: not p.stat.exists
+- name: contrail analytics database cassandra service specific node ips param name
+  set_fact:
+    contrail_analytics_cassandra_param_name: contrail_analytics_database_node_ips
+- name: get contrail service specific node ips
+  register: contrail_analytics_cassandra_nodes_list
+  shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_analytics_cassandra_param_name
+    }}
+- name: turn contrail analytics database specific node ips into string
+  set_fact:
+    contrail_analytics_cassandra_nodes_string: '{{ contrail_analytics_cassandra_nodes_list.stdout
+      | from_json | join('','')  }}'
+- lineinfile:
+    dest: /etc/contrail/common_analytics_database.env
+    line: '{{ item }}'
+    state: present
+  name: write contrail analytics database specific env cars
+  with_items:
+  - NODE_TYPE=database
+  - CASSANDRA_SEEDS={{ contrail_analytics_cassandra_nodes_string }}
+  - CASSANDRA_START_RPC=true
+  - CASSANDRA_CLUSTER_NAME=contrail_analytics
+  - CASSANDRA_PORT=9160
+  - CASSANDRA_CQL_PORT=9042
+  - CASSANDRA_SSL_STORAGE_PORT=7011
+  - CASSANDRA_STORAGE_PORT=7010
+  - CASSANDRA_JMX_LOCAL_PORT=7200
+- name: register contrail analytics query-engine env file
+  register: p
+  stat:
+    path: /etc/contrail/common_analytics_query_engine.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_analytics_query_engine.env
+  name: create contrail analytics query-engine env file
+  when: not p.stat.exists
+- set_fact:
+    analytics_qe_env_vars: []
+- set_fact:
+    analytics_qe_env_vars: '{{ analytics_qe_env_vars + [''NODE_TYPE=database''] }}'
+- lineinfile:
+    dest: /etc/contrail/common_analytics_query_engine.env
+    line: '{{ item }}'
+    regexp: ^NODE_TYPE=
+    state: present
+  name: write remaining contrail analytics query-engine env vars
+  with_items: '{{ analytics_qe_env_vars }}'
+- name: service config name
+  set_fact:
+    contrail_conf_name: analytics_query_engine
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_analytics_query_engine
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: service config name
+  set_fact:
+    contrail_conf_name: analytics_database
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_analytics_database
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: register create contrail analytics snmp env file
+  register: p
+  stat:
+    path: /etc/contrail/common_analytics_snmp.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_analytics_snmp.env
+  name: create contrail contrail analytics snmp env file
+  when: not p.stat.exists
+- set_fact:
+    analytics_snmp_env_vars: []
+- set_fact:
+    analytics_snmp_env_vars: '{{ analytics_snmp_env_vars + [''NODE_TYPE=analytics-snmp'']
+      }}'
+- lineinfile:
+    dest: /etc/contrail/common_analytics_snmp.env
+    line: '{{ item }}'
+    regexp: ^NODE_TYPE=
+    state: present
+  name: write remaining contrail analytics snmp env vars
+  with_items: '{{ analytics_snmp_env_vars }}'
+- name: service config name
+  set_fact:
+    contrail_conf_name: analytics_snmp
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_analytics_snmp
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: register create contrail env file
+  register: p
+  stat:
+    path: /etc/contrail/common_config.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_config.env
+  name: create contrail env file
+  when: not p.stat.exists
+- name: get nova api
+  register: nova_api_host
+  shell: hiera -c /etc/puppet/hiera.yaml cloud_name_internal_api
+- lineinfile:
+    dest: /etc/contrail/common_config.env
+    line: '{{ item }}'
+    state: present
+  name: write remaining contrail config env cars
+  with_items:
+  - NODE_TYPE=config
+  - IPFABRIC_SERVICE_HOST={{ nova_api_host.stdout }}
+- name: service config name
+  set_fact:
+    contrail_conf_name: config
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_config
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: register contrail config database env file
+  register: p
+  stat:
+    path: /etc/contrail/common_config_database.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_config_database.env
+  name: create contrail config database env file
+  when: not p.stat.exists
+- name: contrail config database cassandra node ips param name
+  set_fact:
+    contrail_config_db_nodes_param_name: contrail_database_node_ips
+- name: get contrail config database node ips
+  register: contrail_config_db_service_nodes_list
+  shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_config_db_nodes_param_name }}
+- name: turn contrail config database node ips into string
+  set_fact:
+    contrail_config_db_cassandra_service_nodes_string: '{{ contrail_config_db_service_nodes_list.stdout
+      | from_json | join('','')  }}'
+- lineinfile:
+    dest: /etc/contrail/common_config_database.env
+    line: '{{ item }}'
+    state: present
+  name: write remaining contrail config database env cars
+  with_items:
+  - NODE_TYPE=config-database
+  - CASSANDRA_SEEDS={{ contrail_config_db_cassandra_service_nodes_string }}
+  - CASSANDRA_START_RPC=true
+  - CASSANDRA_CLUSTER_NAME=contrail_database
+  - CASSANDRA_PORT=9161
+  - CASSANDRA_CQL_PORT=9041
+  - CASSANDRA_SSL_STORAGE_PORT=7013
+  - CASSANDRA_STORAGE_PORT=7012
+  - CASSANDRA_JMX_LOCAL_PORT=7201
+  - RABBITMQ_ERLANG_COOKIE=abcdefg
+  - ZOOKEEPER_PORTS=2888:3888
+  - ZOOKEEPER_PORT=2181
+  - ZOOKEEPER_NODES={{ contrail_config_db_cassandra_service_nodes_string }}
+- name: service config name
+  set_fact:
+    contrail_conf_name: config_database
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_config_database
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: register contrail control env file
+  register: p
+  stat:
+    path: /etc/contrail/common_control.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_control.env
+  name: create contrail control env file
+  when: not p.stat.exists
+- ignore_errors: true
+  name: contrail control fqdn
+  register: contrail_control_hostname
+  shell: hiera -c /etc/puppet/hiera.yaml contrail_control_hostname
+- name: set control specific env list
+  set_fact:
+    control_env_list:
+    - NODE_TYPE=control
+- name: add hostname to control specific env list
+  set_fact:
+    control_env_list: '{{ control_env_list }} + [ ''CONTROL_HOSTNAME={{ contrail_control_hostname.stdout
+      }}'' ]'
+  when:
+  - contrail_control_hostname.rc == 0
+  - contrail_control_hostname.stdout != ""
+- lineinfile:
+    dest: /etc/contrail/common_control.env
+    line: '{{ item }}'
+    state: present
+  name: write remaining contrail control config env cars
+  with_items: '{{ control_env_list }}'
+- name: service config name
+  set_fact:
+    contrail_conf_name: control
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_control
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''
+- name: register contrail webui env file
+  register: p
+  stat:
+    path: /etc/contrail/common_webui.env
+- copy:
+    content: ''
+    dest: /etc/contrail/common_webui.env
+  name: create contrail webui env file
+  when: not p.stat.exists
+- name: contrail webui node ips (names) param name
+  set_fact:
+    contrail_webui_nodes_param_name: contrail_webui_node_ips
+- name: get contrail webui node ips
+  register: contrail_webui_nodes_list
+  shell: hiera -c /etc/puppet/hiera.yaml {{ contrail_webui_nodes_param_name }}
+- name: turn contrail webui ips into string
+  set_fact:
+    contrail_webui_nodes_string: '{{ contrail_webui_nodes_list.stdout | from_json
+      | join('','') }}'
+- lineinfile:
+    dest: /etc/contrail/common_webui.env
+    line: WEBUI_NODES={{ contrail_webui_nodes_string }}
+    regexp: ^WEBUI_NODES.*
+    state: present
+  name: write contrail webui node ips to environment file
+- name: contrail webui CA
+  set_fact:
+    contrail_webui_ca: ''
+- block:
+  - name: contrail webui server cert
+    set_fact:
+      contrail_webui_cert: ''
+  - name: contrail webui server key
+    set_fact:
+      contrail_webui_key: ''
+  - lineinfile:
+      dest: /etc/contrail/common_webui.env
+      line: '{{ item.key }}={{ item.value }}'
+      regexp: ^{{ item.key }}.*
+      state: present
+    name: set contrail webui certs for IPA case
+    with_dict:
+      WEBUI_SSL_CERT_FILE: '{{ contrail_webui_cert }}'
+      WEBUI_SSL_KEY_FILE: '{{ contrail_webui_key }}'
+  name: overwrite contrail webui cert files for IPA
+  when: contrail_webui_ca == 'IPA'
+- name: service config name
+  set_fact:
+    contrail_conf_name: webui
+- block:
+  - name: common service env file name
+    set_fact:
+      contrail_service_common_env_file: /etc/contrail/common_contrail.env
+  - name: service env file path
+    set_fact:
+      contrail_service_env_file: /etc/contrail/common_{{ contrail_conf_name }}.env
+  - name: service config dir
+    set_fact:
+      contrail_service_conf_dir: /var/lib/config-data/contrail_webui
+  - name: service config md5 sum file
+    set_fact:
+      contrail_service_conf_md5_file: '{{ contrail_service_conf_dir }}.md5sum'
+  - name: save md5 service env files and common env
+    register: config_md5sum
+    shell: '#!/bin/bash -x
+
+      mkdir -p {{ contrail_service_conf_dir }}
+
+      rm -f {{ contrail_service_conf_dir }}/*
+
+      cp {{ contrail_service_common_env_file }} {{ contrail_service_env_file }} {{
+      contrail_service_conf_dir }}/
+
+      vars=$(cat {{ contrail_service_common_env_file }} {{ contrail_service_env_file
+      }} | sort -u)
+
+      echo "$vars" | md5sum | awk ''{print($1)}'' > {{ contrail_service_conf_md5_file
+      }}
+
+      cat {{ contrail_service_conf_md5_file }}
+
+      chmod 660 {{ contrail_service_conf_dir }}/*
+
+      '
+  - debug:
+      msg: 'service config md5sum: service={{ contrail_conf_name }} md5={{ config_md5sum.stdout
+        }}'
+  name: Contrail config volume prep tasks
+  when: contrail_conf_name != ''

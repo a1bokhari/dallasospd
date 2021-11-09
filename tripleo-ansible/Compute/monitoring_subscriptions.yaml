@@ -1,0 +1,4 @@
+- overcloud-ceilometer-agent-compute
+- overcloud-qdr
+- overcloud-nova-compute
+- overcloud-nova-libvirt

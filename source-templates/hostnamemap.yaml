@@ -1,0 +1,11 @@
+parameter_defaults:
+  ComputeNFVHostnameFormat: computenfv-%index%
+  ContrailControllerHostnameFormat: contrailcontroller-%index%
+  ControlPlaneHostnameFormat: controlplane-%index%
+  ControllerHostnameFormat: controller-%index%
+  ComputeCount: 0
+  ComputeNFVCount: 1
+  ContrailControllerCount: 3
+  ControlPlaneCount: 1
+  ControllerCount: 3
+

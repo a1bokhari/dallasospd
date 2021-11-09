@@ -1,0 +1,124 @@
+ceilometer:
+  users:
+    ceilometer:
+      password: c5t2vc2nmzfxfcctcgrg4h29p
+      roles:
+      - admin
+cinder:
+  users:
+    cinder:
+      password: mwlrs6bw45f6bbmzq9lb2p776
+      roles:
+      - admin
+      - service
+cinderv2:
+  endpoints:
+    admin: http://10.2.120.4:8776/v2/%(tenant_id)s
+    internal: http://10.2.120.4:8776/v2/%(tenant_id)s
+    public: http://172.31.255.130:8776/v2/%(tenant_id)s
+  region: regionOne
+  service: volumev2
+  users:
+    cinderv2:
+      password: mwlrs6bw45f6bbmzq9lb2p776
+      roles:
+      - admin
+      - service
+cinderv3:
+  endpoints:
+    admin: http://10.2.120.4:8776/v3/%(tenant_id)s
+    internal: http://10.2.120.4:8776/v3/%(tenant_id)s
+    public: http://172.31.255.130:8776/v3/%(tenant_id)s
+  region: regionOne
+  service: volumev3
+  users:
+    cinderv3:
+      password: mwlrs6bw45f6bbmzq9lb2p776
+      roles:
+      - admin
+      - service
+glance:
+  endpoints:
+    admin: http://10.2.120.4:9292
+    internal: http://10.2.120.4:9292
+    public: http://172.31.255.130:9292
+  region: regionOne
+  service: image
+  users:
+    glance:
+      password: tdhxg4wpgp56mhb4d5bfs2jgb
+heat:
+  domains:
+  - heat_stack
+  endpoints:
+    admin: http://10.2.120.4:8004/v1/%(tenant_id)s
+    internal: http://10.2.120.4:8004/v1/%(tenant_id)s
+    public: http://172.31.255.130:8004/v1/%(tenant_id)s
+  region: regionOne
+  roles:
+  - heat_stack_user
+  service: orchestration
+  users:
+    heat:
+      password: gc56chrwwv6c4tmqwwbcgc5f2
+    heat_stack_domain_admin:
+      domain: heat_stack
+      password: 4vlrnz2gn227kj5jbsn92sbm6
+      roles:
+      - admin
+heat-cfn:
+  endpoints:
+    admin: http://10.2.120.4:8000/v1
+    internal: http://10.2.120.4:8000/v1
+    public: http://172.31.255.130:8000/v1
+  region: regionOne
+  service: cloudformation
+  users:
+    heat-cfn:
+      password: gc56chrwwv6c4tmqwwbcgc5f2
+neutron:
+  endpoints:
+    admin: http://10.2.120.4:9696
+    internal: http://10.2.120.4:9696
+    public: http://172.31.255.130:9696
+  region: regionOne
+  service: network
+  users:
+    neutron:
+      password: jqfd8znjclkrmvnp62mgkmqj7
+nova:
+  endpoints:
+    admin: http://10.2.120.4:8774/v2.1
+    internal: http://10.2.120.4:8774/v2.1
+    public: http://172.31.255.130:8774/v2.1
+  region: regionOne
+  service: compute
+  users:
+    nova:
+      password: 9sjllnf27xprs9hc9mvcddrkf
+      roles:
+      - admin
+      - service
+placement:
+  endpoints:
+    admin: http://10.2.120.4:8778/placement
+    internal: http://10.2.120.4:8778/placement
+    public: http://172.31.255.130:8778/placement
+  region: regionOne
+  service: placement
+  users:
+    placement:
+      password: 29qc42rmjspjphfgbbx4ctjbp
+swift:
+  endpoints:
+    admin: http://10.3.130.4:8080
+    internal: http://10.3.130.4:8080/v1/AUTH_%(tenant_id)s
+    public: http://172.31.255.130:8080/v1/AUTH_%(tenant_id)s
+  region: regionOne
+  roles:
+  - swiftoperator
+  - ResellerAdmin
+  service: object-store
+  users:
+    swift:
+      password: j5q7ff725q985sdq6rhgscqj9

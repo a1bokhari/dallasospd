@@ -1,0 +1,8 @@
+# This disables network configuration entirely (No-op).
+resource_registry:
+  OS::TripleO::Controller::Net::SoftwareConfig: ../net-config-noop.yaml
+  OS::TripleO::Compute::Net::SoftwareConfig: ../net-config-noop.yaml
+  OS::TripleO::ContrailController::Net::SoftwareConfig: ../net-config-noop.yaml
+  OS::TripleO::ContrailSriov::Net::SoftwareConfig: ../net-config-noop.yaml
+  OS::TripleO::ContrailDpdk::Net::SoftwareConfig: ../net-config-noop.yaml
+  OS::TripleO::ComputeNFV::Net::SoftwareConfig: ../net-config-noop.yaml

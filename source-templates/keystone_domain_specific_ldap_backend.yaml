@@ -1,0 +1,22 @@
+parameter_defaults:
+  KeystoneLDAPDomainEnable: true
+  KeystoneLDAPBackendConfigs:
+    unica:
+      url: ldap://idmvim.tmeprj2.comm.red.ibm.gsc
+      user: uid=svc-ldap,cn=users,cn=accounts,dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc
+      password: svc-ldap
+      suffix: dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc
+      user_tree_dn: cn=users,cn=accounts,dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc
+      user_filter: "(memberOf=cn=grp-openstack,cn=groups,cn=accounts,dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc)"
+      user_objectclass: inetUser
+      user_id_attribute: uid
+      user_allow_create: false
+      user_allow_update: false
+      user_allow_delete: false
+      group_tree_dn: cn=groups,cn=accounts,dc=tmeprj2,dc=comm,dc=red,dc=ibm,dc=gsc
+      group_objectclass: groupOfNames
+      group_id_attribute: cn
+      group_name_attribute:  cn
+      group_member_attribute: member
+      group_desc_attribute: description
+

@@ -1,0 +1,41 @@
+- name: External
+  vip: true
+  name_lower: external
+  vlan: 100
+  ip_subnet: '172.31.255.128/27'
+  allocation_pools: [{'start': '172.31.255.130', 'end': '172.31.255.140'}]
+  gateway_ip: '172.31.255.129'
+  mtu: 1500
+- name: InternalApi
+  name_lower: internal_api
+  vip: true
+  vlan: 120
+  ip_subnet: '10.2.120.0/24'
+  allocation_pools: [{'start': '10.2.120.10', 'end': '10.2.120.200'}]
+  gateway_ip: '10.2.120.1'
+  mtu: 1500
+- name: Storage
+  vip: true
+  vlan: 130
+  name_lower: storage
+  ip_subnet: '10.3.130.0/24'
+  allocation_pools: [{'start': '10.3.130.10', 'end': '10.3.130.200'}]
+  gateway_ip: '10.3.130.1'
+  mtu: 1500
+- name: StorageMgmt
+  vip: true
+  vlan: 140
+  name_lower: storage_mgmt
+  ip_subnet: '10.4.140.0/24'
+  allocation_pools: [{'start': '10.4.140.10', 'end': '10.4.140.200'}]
+  gateway_ip: '10.4.140.1'
+  mtu: 1500
+- name: Tenant
+  vip: false  # Tenant network does not use VIPs
+  name_lower: tenant
+  vlan: 110
+  ip_subnet: '10.1.110.0/24'
+  allocation_pools: [{'start': '10.1.110.10', 'end': '10.1.110.200'}]
+  gateway_ip: '10.1.110.1'
+  mtu: 9000
+  routes: [{'destination':'10.45.0.0/24', 'nexthop':'10.1.110.1'},{'destination':'172.31.255.192/27', 'nexthop':'10.1.110.1'}]

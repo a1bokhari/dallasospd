@@ -1,0 +1,45 @@
+- block:
+  - name: Set contrail-vrouter-kernel-init container name
+    set_fact:
+      vrouter_init_container_name_ansible: contrail-vrouter-kernel-init
+  - name: Start contrail-vrouter-kernel-init container as post update
+    shell: '{{ container_cli }} start -i {{ vrouter_init_container_name_ansible }}
+
+      '
+  - args:
+      executable: /bin/bash
+    async: 120
+    ignore_errors: true
+    name: Restart vhost0 interface
+    poll: 5
+    shell: 'exec > >(tee -a /tmp/contrail_reinit_vhost0.log)
+
+      exec 2>&1
+
+      ifdown vhost0
+
+      ifup vhost0
+
+      {{ container_cli }} start contrail_vrouter_agent
+
+      '
+  name: Update vrouter kernel module on post upgrade and reinit vhost0
+  when:
+  - step|int == 1
+- include_role:
+    name: tripleo-podman
+    tasks_from: tripleo_docker_purge.yml
+  name: Purge everything about docker on the host
+  when:
+  - (step | int) == 3
+- include_role:
+    name: tripleo-podman
+    tasks_from: tripleo_docker_stop.yml
+  name: Stop docker
+- include_role:
+    name: tripleo-podman
+    tasks_from: tripleo_podman_purge.yml
+  name: Purge Podman
+  when:
+  - (step | int) == 3
+  - container_cli == 'podman'
